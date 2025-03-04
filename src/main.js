@@ -19,7 +19,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
   collectStar(star) {
     star.disableBody(true, true);
     this.scene.score += 10;
-    this.player.scene.scoreText.setText("Score: " + this.score);
+    this.scene.scoreText.setText("Score: " + this.scene.score);
 
     if (this.scene.stars.countActive(true) === 0) {
       this.scene.stars.children.iterate((child) => {
@@ -27,7 +27,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
       });
 
       let x =
-        this.player.x < 400
+        this.x < 400
           ? Phaser.Math.Between(400, 800)
           : Phaser.Math.Between(0, 400);
       let bomb = this.scene.bombs.create(x, 16, "bomb");
@@ -41,8 +41,8 @@ class Player extends Phaser.Physics.Arcade.Sprite {
 
   hitBomb() {
     this.scene.physics.pause();
-    this.player.setTint(0xff0000);
-    this.player.anims.play("turn");
+    this.setTint(0xff0000);
+    this.anims.play("turn");
     this.scene.gameOver = true;
   }
 
@@ -60,7 +60,14 @@ class Player extends Phaser.Physics.Arcade.Sprite {
 class MainScene extends Phaser.Scene {
   constructor() {
     super({ key: "MainScene" });
-    this.scoreText = "Score: 0";
+    this.score = 0;
+  }
+
+  init(data) {
+    this.gameOver = false;
+    if (data.reset) {
+      this.score = 0;
+    }
   }
 
   preload() {
@@ -75,7 +82,10 @@ class MainScene extends Phaser.Scene {
   }
 
   create() {
-    this.add.image(0, 0, "sky").setOrigin(0, 0).setSize(width, height);
+    this.add
+      .image(0, 0, "sky")
+      .setOrigin(0, 0)
+      .setScale(width / 800, height / 600);
 
     this.platforms = this.physics.add.staticGroup();
     this.platforms.create(400, 568, "ground").setScale(2).refreshBody();
@@ -84,7 +94,6 @@ class MainScene extends Phaser.Scene {
     this.platforms.create(750, 220, "ground");
 
     this.player = new Player(this, 100, 450, "dude");
-    console.log(this.player.scene.scoreText);
 
     this.anims.create({
       key: "left",
@@ -119,8 +128,6 @@ class MainScene extends Phaser.Scene {
     });
 
     this.bombs = this.physics.add.group();
-    this.score = 0;
-
     this.scoreText = this.add.text(16, 16, "Score: 0", {
       fontSize: "32px",
       fill: "#000",
@@ -132,21 +139,46 @@ class MainScene extends Phaser.Scene {
     this.physics.add.overlap(
       this.player,
       this.stars,
-      this.player.collectStar,
+      (player, star) => player.collectStar(star),
       null,
       this
     );
     this.physics.add.collider(
       this.player,
       this.bombs,
-      this.player.hitBomb,
+      (player, bomb) => player.hitBomb(),
       null,
       this
     );
   }
 
   update() {
-    if (this.gameOver) return;
+    if (this.gameOver) {
+      try {
+        let scores = JSON.parse(localStorage.getItem("scores")) || [];
+
+        const existingScore = scores.find(
+          (entry) => entry.nombre === this.player.nombre
+        );
+
+        if (!existingScore) {
+          scores.push({ nombre: this.player.nombre, score: this.score });
+        } else if (this.score > existingScore.score) {
+          existingScore.score = this.score;
+        }
+
+        scores.sort((a, b) => b.score - a.score);
+
+        localStorage.setItem("scores", JSON.stringify(scores));
+      } catch (error) {
+        console.error("Error al guardar los puntajes:", error);
+      }
+      console.log("Cambiando a GameOverScene");
+      return this.scene.start("GameOverScene", {
+        score: this.score,
+        player: this.player,
+      });
+    }
 
     if (this.cursors.left.isDown) {
       this.player.setVelocityX(-160);
@@ -167,7 +199,44 @@ class MainScene extends Phaser.Scene {
   }
 }
 
-var config = {
+class GameOverScene extends Phaser.Scene {
+  constructor() {
+    super({ key: "GameOverScene" });
+  }
+
+  init(data) {
+    this.score = data.score || 0;
+  }
+
+  create() {
+    this.add
+      .text(width / 2, height / 2 - 50, "Game Over", {
+        fontSize: "64px",
+        fill: "#FFFFFF",
+      })
+      .setOrigin(0.5, 0.5);
+
+    this.add
+      .text(width / 2, height / 2, `Score: ${this.score}`, {
+        fontSize: "32px",
+        fill: "#FFFFFF",
+      })
+      .setOrigin(0.5, 0.5);
+
+    this.add
+      .text(width / 2, height / 2 + 100, "Press any key to restart", {
+        fontSize: "24px",
+        fill: "#FFFFFF",
+      })
+      .setOrigin(0.5, 0.5);
+
+    this.input.keyboard.once("keydown", () => {
+      this.scene.start("MainScene", { reset: true });
+    });
+  }
+}
+
+const config = {
   type: Phaser.AUTO,
   width: width,
   height: height,
@@ -178,7 +247,7 @@ var config = {
       debug: false,
     },
   },
-  scene: MainScene,
+  scene: [MainScene, GameOverScene],
 };
 
-var game = new Phaser.Game(config);
+const game = new Phaser.Game(config);
