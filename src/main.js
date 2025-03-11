@@ -8,7 +8,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     scene.add.existing(this);
     scene.physics.add.existing(this);
 
-    this.setBounce(0.2);
+    this.setBounce(0);
     this.setCollideWorldBounds(true);
 
     this.nombre = nombre;
@@ -23,7 +23,11 @@ class Player extends Phaser.Physics.Arcade.Sprite {
 
     if (this.scene.stars.countActive(true) === 0) {
       this.scene.stars.children.iterate((child) => {
-        child.enableBody(true, child.x, 0, true, true);
+        child.enableBody(true, Phaser.Math.Between(0, width), 0, true, true);
+        console.log(width);
+        child.setBounce(1);
+        child.setCollideWorldBounds(true);
+        child.setVelocity(Phaser.Math.Between(-200, 200), 40);
       });
 
       let x =
@@ -87,52 +91,83 @@ class MainScene extends Phaser.Scene {
       .setOrigin(0, 0)
       .setScale(width / 800, height / 600);
 
-    this.platforms = this.physics.add.staticGroup();
-    this.platforms.create(400, 568, "ground").setScale(2).refreshBody();
-    this.platforms.create(600, 400, "ground");
-    this.platforms.create(50, 250, "ground");
-    this.platforms.create(750, 220, "ground");
+    this.platforms = this.physics.add.staticGroup(); //Crea el grupo de plataformas
+    //Añade cada plataforma en su respectiva posición
+    this.platforms.create(width/2, 568, "ground").setScale(2.5).refreshBody();
+    this.platforms.create(width - 350, 400, "ground");
+    this.platforms.create(350, 400, "ground");
+    this.platforms.create(width - 300, 220, "ground");
+    this.platforms.create(300, 220, "ground");
+    
+    //Creación de lava
+    this.lava = this.physics.add.staticSprite(0, 600, "ground");
+    this.lava.setScale(1,2);
+    this.lava.displayWidth = width * 2;
+    this.lava.setTint(0xff0000);
+    this.lava.refreshBody();
 
-    this.player = new Player(this, 100, 450, "dude");
+    //Plataforma movible
+    this.mobilePlatform = this.physics.add.sprite(width / 2, 20, "ground").setImmovable(true);
+    this.mobilePlatform.setScale(0.25,0.5);
+    this.tweens.add({
+      targets: this.mobilePlatform,
+      y: 250,
+      duration: 2000,
+      yoyo: true,
+      repeat: -1,
+      ease: "Linear"
+    });
+    
+    
+    this.player = new Player(this, width/2, 450, "dude");
 
+    this.physics.add.collider(this.player, this.mobilePlatform, function (player, mobilePlatform) {
+      player.setVelocityY(0); // Evita que el jugador rebote raro
+      player.y = mobilePlatform.y; // Mantiene al jugador sobre la plataforma
+  }, null, this);
+  
+    
     this.anims.create({
       key: "left",
       frames: this.anims.generateFrameNumbers("dude", { start: 0, end: 3 }),
       frameRate: 10,
       repeat: -1,
     });
-
+    
     this.anims.create({
       key: "turn",
       frames: [{ key: "dude", frame: 4 }],
       frameRate: 20,
     });
-
+    
     this.anims.create({
       key: "right",
       frames: this.anims.generateFrameNumbers("dude", { start: 5, end: 8 }),
       frameRate: 10,
       repeat: -1,
     });
-
+    
     this.cursors = this.input.keyboard.createCursorKeys();
-
+    
     this.stars = this.physics.add.group({
       key: "star",
-      repeat: 11,
-      setXY: { x: 12, y: 0, stepX: 70 },
+      repeat: 6,
+      setXY: { x: 12, y: 0, stepX: width/7 },
     });
-
+    
     this.stars.children.iterate((child) => {
-      child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
+      child.setBounce(1);
+      child.setCollideWorldBounds(true);
+      child.setVelocity(Phaser.Math.Between(-200, 200), 40);
     });
-
+    
     this.bombs = this.physics.add.group();
     this.scoreText = this.add.text(16, 16, "Score: 0", {
       fontSize: "32px",
       fill: "#000",
     });
-
+    
+    this.physics.add.collider(this.player, this.mobilePlatform);
     this.physics.add.collider(this.player, this.platforms);
     this.physics.add.collider(this.stars, this.platforms);
     this.physics.add.collider(this.bombs, this.platforms);
@@ -148,6 +183,13 @@ class MainScene extends Phaser.Scene {
       this.bombs,
       (player, bomb) => player.hitBomb(),
       null,
+      this
+    );
+    this.physics.add.collider(
+      this.player,
+      this.lava, 
+      (player) => player.hitBomb(),
+      null, 
       this
     );
   }
