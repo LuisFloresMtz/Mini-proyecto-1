@@ -75,7 +75,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
 }
 
 class Enemy extends Phaser.Physics.Arcade.Sprite {
-  constructor(scene, x, y, texture) {
+  constructor(scene, x, y, texture = "morty") {
     super(scene, x, y, texture);
 
     scene.add.existing(this);
@@ -86,6 +86,22 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
 
     // Definir tamaño del cuerpo para mejor detección de colisión
     this.body.setSize(this.width * 0.8, this.height * 0.9);
+  }
+
+  
+
+  move() {
+    if (this.scene.player.x < this.x) {
+      this.setVelocityX(-100);
+    } else if (this.scene.player.x > this.x) {
+      this.setVelocityX(100);
+    }
+
+    // if (this.body.velocity.x < 0) {
+    //   this.anims.play("left", true);
+    // } else if (this.body.velocity.x > 0) {
+    //   this.anims.play("right", true);
+    // }
   }
 
   hitPlayer(player, enemy) {
@@ -150,6 +166,8 @@ class MainScene extends Phaser.Scene {
   }
 
   create() {
+    console.log(this.textures.list);
+
     this.background = this.add
       .image(0, 0, "sky")
       .setOrigin(0, 0)
@@ -164,13 +182,18 @@ class MainScene extends Phaser.Scene {
     this.platforms.create(50, 250, "ground");
     this.platforms.create(750, 220, "ground");
 
-    this.player = new Player(this, 100, 450, "rick");
+    this.player = new Player(this, 100, 450, "rick", "Luis", 0);
 
-    this.enemies = this.physics.add.group({
-      classType: Enemy,
-      key: "morty",
-      repeat: 11,
-      setXY: { x: 12, y: 0, stepX: 70 },
+    this.enemies = this.physics.add.group();
+
+    for (let i = 0; i < 12; i++) {
+      let x = 12 + i * 70;
+      let enemy = new Enemy(this, x, 0, "morty"); // Crear instancia de Enemy
+      this.enemies.add(enemy); // Agregar manualmente al grupo
+    }
+
+    this.enemies.getChildren().forEach((enemy) => {
+      console.log(enemy.texture.key); // Verifica el key de la textura
     });
 
     this.enemies.children.iterate((enemy) => {
@@ -274,6 +297,12 @@ class MainScene extends Phaser.Scene {
     }
 
     this.updateBackgroundPosition();
+
+    this.enemies.children.iterate((enemy) => {
+      if (enemy) {
+        enemy.move();
+      }
+    });
   }
 
   updateBackgroundPosition() {
