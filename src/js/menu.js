@@ -151,7 +151,7 @@ document.addEventListener("DOMContentLoaded", () => {
   
     function executeMenuAction(action) {
       if (action === "jugar") {
-        console.log("Iniciando juego...");
+        window.location.href = "juego.html";
       } else {
         console.log("Acción ejecutada: " + action);
       }
