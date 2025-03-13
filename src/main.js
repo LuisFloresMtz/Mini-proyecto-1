@@ -88,55 +88,74 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.setBounce(0.2);
     this.setCollideWorldBounds(true);
 
-    // Definir tamaño del cuerpo para mejor detección de colisión
     this.body.setSize(this.width * 0.8, this.height * 0.9);
+
+    this.speed = 100; // Velocidad del enemigo
   }
 
   move() {
-    if (this.scene.player.x < this.x) {
-      this.setVelocityX(-100);
-    } else if (this.scene.player.x > this.x) {
-      this.setVelocityX(100);
-    }
-
-    if (this.body.velocity.x < 0) {
+    const player = this.scene.player;
+    if (player.x < this.x) {
+      this.setVelocityX(-this.speed);
       this.anims.play("leftM", true);
-    } else if (this.body.velocity.x > 0) {
+    } else {
+      this.setVelocityX(this.speed);
       this.anims.play("rightM", true);
     }
-  }
 
-  hitPlayer(player, enemy) {
-    this.scene.physics.pause(); // Pausa la física del juego
-    player.setTint(0xff0000);
+    // Saltar
 
-    if (player.anims.exists("turn")) {
-      player.anims.play("turn");
-    }
-  }
-
-  hitBullet(bullet, enemy) {
-    enemy.destroy();
-    bullet.destroy();
-
-    if (typeof this.scene.score === "number") {
-      this.scene.score += 10;
-      this.scene.scoreText.setText("Score: " + this.scene.score);
+    if (
+      (this.body.touching.down || this.body.blocked.down) &&
+      player.y < this.y
+    ) {
+      this.setVelocityY(-300);
     }
   }
 }
 
 class FinalBoss extends Phaser.Physics.Arcade.Sprite {
-  constructor(scene, x, y, texture = "morty") {
+  constructor(scene, x, y, texture = "boss") {
     super(scene, x, y, texture);
 
     scene.add.existing(this);
     scene.physics.add.existing(this);
 
     this.setCollideWorldBounds(true);
-
     this.health = 100;
     this.setScale(2);
+
+    // 🔹 Asegurar que las animaciones existen antes de jugarlas
+    this.scene.events.once("createAnimations", this.initAnimations, this);
+  }
+
+  initAnimations() {
+    this.anims.play("turnB");
+  }
+
+  update() {
+    if (!this.scene.player) return;
+
+    const player = this.scene.player;
+    const speed = 80;
+    const distance = Phaser.Math.Distance.Between(
+      this.x,
+      this.y,
+      player.x,
+      player.y
+    );
+
+    // 🔹 Seguir al jugador solo si está cerca
+    if (distance < 300) {
+      this.scene.physics.moveToObject(this, player, speed);
+    }
+
+    // 🔹 Cambiar animación según la dirección
+    if (this.x < player.x) {
+      this.anims.play("rightB", true);
+    } else if (this.x > player.x) {
+      this.anims.play("leftB", true);
+    }
   }
 }
 
@@ -359,15 +378,14 @@ class MainScene extends Phaser.Scene {
       ) {
         this.player.setVelocityY(-330);
       }
-
-      this.updateBackgroundPosition();
-
-      this.enemies.children.iterate((enemy) => {
-        if (enemy) {
-          enemy.move();
-        }
-      });
     }
+    this.updateBackgroundPosition();
+
+    this.enemies.children.iterate((enemy) => {
+      if (enemy) {
+        enemy.move();
+      }
+    });
   }
   updateBackgroundPosition() {
     const playerX = this.player.x;
@@ -389,18 +407,15 @@ class FinalBossScene extends Phaser.Scene {
   }
 
   init(data) {
-    this.score = data.score;
+    this.score = data.score || 0;
   }
 
   preload() {
-    this.load.spritesheet("boss", "assets/boss.png", {
-      frameWidth: 40,
-      frameHeight: 50,
-    });
-
     this.load.image("sky", "assets/sky.png");
     this.load.image("ground", "assets/platform.png");
     this.load.image("bullet", "assets/bullet.png");
+    this.load.image("fireBoss", "assets/fireBoss.png");
+
     this.load.spritesheet("rick", "assets/rick.png", {
       frameWidth: 40,
       frameHeight: 50,
@@ -410,6 +425,30 @@ class FinalBossScene extends Phaser.Scene {
       frameWidth: 40,
       frameHeight: 50,
     });
+
+    this.load.spritesheet("boss", "assets/boss.png", {
+      frameWidth: 40,
+      frameHeight: 50,
+    });
+  }
+
+  create() {
+    const screenWidth = this.sys.game.config.width;
+    const screenHeight = this.sys.game.config.height;
+
+    console.log(this.textures.list);
+
+    this.background = this.add
+      .image(0, 0, "sky")
+      .setOrigin(0, 0)
+      .setDisplaySize(screenWidth * 2, screenHeight);
+
+    this.platforms = this.physics.add.staticGroup();
+    this.platforms.create(400, 580, "ground").setScale(4).refreshBody();
+
+    this.player = this.physics.add.sprite(400, 500, "rick");
+    this.player.setCollideWorldBounds(true);
+    this.physics.add.collider(this.player, this.platforms);
 
     this.anims.create({
       key: "leftR",
@@ -459,6 +498,73 @@ class FinalBossScene extends Phaser.Scene {
       repeat: -1,
     });
 
+    this.createAnimations();
+
+    this.boss = new FinalBoss(this, 200, 450, "boss");
+
+    this.events.emit("createAnimations");
+
+    this.bossProjectiles = this.physics.add.group();
+
+    this.physics.add.collider(this.player, this.platforms);
+    this.physics.add.collider(this.boss, this.platforms);
+
+    this.physics.add.overlap(
+      this.player,
+      this.bossProjectiles,
+      this.hitPlayer,
+      null,
+      this
+    );
+
+    this.time.addEvent({
+      delay: 3000,
+      callback: () => this.bossAttack(),
+      loop: true,
+    });
+  }
+
+  update() {
+    if (this.boss) {
+      this.boss.update();
+    }
+  }
+
+  createAnimations() {
+    this.anims.create({
+      key: "leftR",
+      frames: this.anims.generateFrameNumbers("rick", { start: 0, end: 3 }),
+      frameRate: 10,
+      repeat: -1,
+    });
+
+    this.anims.create({
+      key: "turn",
+      frames: [{ key: "rick", frame: 4 }],
+      frameRate: 20,
+    });
+
+    this.anims.create({
+      key: "rightR",
+      frames: this.anims.generateFrameNumbers("rick", { start: 5, end: 8 }),
+      frameRate: 10,
+      repeat: -1,
+    });
+
+    this.anims.create({
+      key: "leftB",
+      frames: this.anims.generateFrameNumbers("boss", { start: 0, end: 3 }),
+      frameRate: 10,
+      repeat: -1,
+    });
+
+    this.anims.create({
+      key: "rightB",
+      frames: this.anims.generateFrameNumbers("boss", { start: 5, end: 8 }),
+      frameRate: 10,
+      repeat: -1,
+    });
+
     this.anims.create({
       key: "turnB",
       frames: [{ key: "boss", frame: 4 }],
@@ -466,8 +572,22 @@ class FinalBossScene extends Phaser.Scene {
     });
   }
 
-  create() {
-    this.boss = new FinalBoss(this, 100, 450, "boss");
+  bossAttack() {
+    if (!this.boss.active) return;
+
+    const fireball = this.bossProjectiles.create(
+      this.boss.x,
+      this.boss.y,
+      "fireBoss"
+    );
+
+    fireball.setVelocityX(this.boss.x < this.player.x ? 200 : -200);
+    fireball.setGravityY(-300);
+  }
+
+  hitPlayer(player, projectile) {
+    projectile.destroy();
+    console.log("¡El jugador ha sido golpeado!");
   }
 }
 
