@@ -1,17 +1,7 @@
 const width = window.innerWidth;
 const height = window.innerHeight;
 
-class Bullet extends Phaser.Physics.Arcade.Sprite {
-  constructor(scene, x, y, texture) {
-    super(scene, x, y, texture);
-
-    scene.add.existing(this);
-    scene.physics.add.existing(this);
-
-    this.setBounce(0);
-    this.setCollideWorldBounds(true);
-  }
-}
+// Player
 
 class Player extends Phaser.Physics.Arcade.Sprite {
   constructor(scene, x, y, texture, nombre = "Luis", score = 0) {
@@ -74,6 +64,20 @@ class Player extends Phaser.Physics.Arcade.Sprite {
   }
 }
 
+class Bullet extends Phaser.Physics.Arcade.Sprite {
+  constructor(scene, x, y, texture) {
+    super(scene, x, y, texture);
+
+    scene.add.existing(this);
+    scene.physics.add.existing(this);
+
+    this.setBounce(0);
+    this.setCollideWorldBounds(true);
+  }
+}
+
+// Enemies
+
 class Enemy extends Phaser.Physics.Arcade.Sprite {
   constructor(scene, x, y, texture = "morty") {
     super(scene, x, y, texture);
@@ -88,8 +92,6 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.body.setSize(this.width * 0.8, this.height * 0.9);
   }
 
-  
-
   move() {
     if (this.scene.player.x < this.x) {
       this.setVelocityX(-100);
@@ -97,11 +99,11 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
       this.setVelocityX(100);
     }
 
-    // if (this.body.velocity.x < 0) {
-    //   this.anims.play("left", true);
-    // } else if (this.body.velocity.x > 0) {
-    //   this.anims.play("right", true);
-    // }
+    if (this.body.velocity.x < 0) {
+      this.anims.play("leftM", true);
+    } else if (this.body.velocity.x > 0) {
+      this.anims.play("rightM", true);
+    }
   }
 
   hitPlayer(player, enemy) {
@@ -121,6 +123,20 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
       this.scene.score += 10;
       this.scene.scoreText.setText("Score: " + this.scene.score);
     }
+  }
+}
+
+class FinalBoss extends Phaser.Physics.Arcade.Sprite {
+  constructor(scene, x, y, texture = "morty") {
+    super(scene, x, y, texture);
+
+    scene.add.existing(this);
+    scene.physics.add.existing(this);
+
+    this.setCollideWorldBounds(true);
+
+    this.health = 100;
+    this.setScale(2);
   }
 }
 
@@ -160,6 +176,10 @@ class MainScene extends Phaser.Scene {
       frameHeight: 50,
     });
     this.load.spritesheet("morty", "assets/morty.png", {
+      frameWidth: 40,
+      frameHeight: 50,
+    });
+    this.load.spritesheet("boss", "assets/boss.png", {
       frameWidth: 40,
       frameHeight: 50,
     });
@@ -211,7 +231,7 @@ class MainScene extends Phaser.Scene {
     this.physics.add.collider(this.enemies, this.platforms);
     this.physics.add.collider(this.player, this.enemies, (player, enemy) => {
       this.gameOver = true;
-      this.scene.start("GameOverScene", { score: this.score });
+      this.scene.start("FinalBossScene", { score: this.score });
     });
 
     this.physics.add.collider(this.player, this.platforms);
@@ -225,7 +245,7 @@ class MainScene extends Phaser.Scene {
     );
 
     this.anims.create({
-      key: "left",
+      key: "leftR",
       frames: this.anims.generateFrameNumbers("rick", { start: 0, end: 3 }),
       frameRate: 10,
       repeat: -1,
@@ -238,8 +258,22 @@ class MainScene extends Phaser.Scene {
     });
 
     this.anims.create({
-      key: "right",
+      key: "rightR",
       frames: this.anims.generateFrameNumbers("rick", { start: 5, end: 8 }),
+      frameRate: 10,
+      repeat: -1,
+    });
+
+    this.anims.create({
+      key: "leftM",
+      frames: this.anims.generateFrameNumbers("morty", { start: 0, end: 3 }),
+      frameRate: 10,
+      repeat: -1,
+    });
+
+    this.anims.create({
+      key: "rightM",
+      frames: this.anims.generateFrameNumbers("morty", { start: 5, end: 8 }),
       frameRate: 10,
       repeat: -1,
     });
@@ -276,12 +310,12 @@ class MainScene extends Phaser.Scene {
 
     if (this.cursors.left.isDown) {
       this.player.setVelocityX(-160);
-      this.player.anims.play("left", true);
+      this.player.anims.play("leftR", true);
       if (this.shootKey.isDown) this.player.shoot("left");
       if (this.cursors.shift.isDown) this.player.run("left");
     } else if (this.cursors.right.isDown) {
       this.player.setVelocityX(160);
-      this.player.anims.play("right", true);
+      this.player.anims.play("rightR", true);
       if (this.cursors.shift.isDown) this.player.run("right");
       if (this.shootKey.isDown) this.player.shoot("right");
     } else {
@@ -319,6 +353,94 @@ class MainScene extends Phaser.Scene {
   }
 }
 
+class FinalBossScene extends Phaser.Scene {
+  constructor() {
+    super({ key: "FinalBossScene" });
+  }
+
+  init(data) {
+    this.score = data.score;
+  }
+
+  preload() {
+    this.load.spritesheet("boss", "assets/boss.png", {
+      frameWidth: 40,
+      frameHeight: 50,
+    });
+
+    this.load.image("sky", "assets/sky.png");
+    this.load.image("ground", "assets/platform.png");
+    this.load.image("bullet", "assets/bullet.png");
+    this.load.spritesheet("rick", "assets/rick.png", {
+      frameWidth: 40,
+      frameHeight: 50,
+    });
+
+    this.load.spritesheet("morty", "assets/morty.png", {
+      frameWidth: 40,
+      frameHeight: 50,
+    });
+
+    this.anims.create({
+      key: "leftR",
+      frames: this.anims.generateFrameNumbers("rick", { start: 0, end: 3 }),
+      frameRate: 10,
+      repeat: -1,
+    });
+
+    this.anims.create({
+      key: "turn",
+      frames: [{ key: "rick", frame: 4 }],
+      frameRate: 20,
+    });
+
+    this.anims.create({
+      key: "rightR",
+      frames: this.anims.generateFrameNumbers("rick", { start: 5, end: 8 }),
+      frameRate: 10,
+      repeat: -1,
+    });
+
+    this.anims.create({
+      key: "leftM",
+      frames: this.anims.generateFrameNumbers("morty", { start: 0, end: 3 }),
+      frameRate: 10,
+      repeat: -1,
+    });
+
+    this.anims.create({
+      key: "rightM",
+      frames: this.anims.generateFrameNumbers("morty", { start: 5, end: 8 }),
+      frameRate: 10,
+      repeat: -1,
+    });
+
+    this.anims.create({
+      key: "leftB",
+      frames: this.anims.generateFrameNumbers("boss", { start: 0, end: 3 }),
+      frameRate: 10,
+      repeat: -1,
+    });
+
+    this.anims.create({
+      key: "rightB",
+      frames: this.anims.generateFrameNumbers("boss", { start: 5, end: 8 }),
+      frameRate: 10,
+      repeat: -1,
+    });
+
+    this.anims.create({
+      key: "turnB",
+      frames: [{ key: "boss", frame: 4 }],
+      frameRate: 20,
+    });
+  }
+
+  create() {
+    this.boss = new FinalBoss(this, 100, 450, "boss");
+  }
+}
+
 // Game
 
 const config = {
@@ -332,7 +454,7 @@ const config = {
       debug: true,
     },
   },
-  scene: [MainScene],
+  scene: [MainScene, FinalBossScene],
 };
 
 const game = new Phaser.Game(config);
