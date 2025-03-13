@@ -61,6 +61,7 @@ class MainScene extends Phaser.Scene {
   constructor() {
     super({ key: "MainScene" });
     this.score = 0;
+    this.background = null;
   }
 
   init(data) {
@@ -71,21 +72,22 @@ class MainScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image("sky", "assets/sky.png");
+    this.load.image("sky", "assets/sky.gif");
     this.load.image("ground", "assets/platform.png");
     this.load.image("star", "assets/star.png");
     this.load.image("bomb", "assets/bomb.png");
-    this.load.spritesheet("dude", "assets/dude.png", {
-      frameWidth: 32,
-      frameHeight: 48,
-    });
+    this.load.spritesheet("dude", "assets/dude.png", {frameWidth: 40,frameHeight: 50});
   }
 
   create() {
-    this.add
+    const screenWidth = this.sys.game.config.width;
+    const screenHeight = this.sys.game.config.height;
+
+    
+    this.background = this.add
       .image(0, 0, "sky")
       .setOrigin(0, 0)
-      .setScale(width / 800, height / 600);
+      .setDisplaySize(screenWidth * 2, screenHeight);
 
     this.platforms = this.physics.add.staticGroup();
     this.platforms.create(400, 568, "ground").setScale(2).refreshBody();
@@ -101,7 +103,7 @@ class MainScene extends Phaser.Scene {
       frameRate: 10,
       repeat: -1,
     });
-
+     
     this.anims.create({
       key: "turn",
       frames: [{ key: "dude", frame: 4 }],
@@ -196,6 +198,23 @@ class MainScene extends Phaser.Scene {
     if (this.cursors.up.isDown && this.player.body.touching.down) {
       this.player.setVelocityY(-330);
     }
+
+    this.updateBackgroundPosition();
+  }
+  //para el deslizamiento de img
+  updateBackgroundPosition() {
+    const playerX = this.player.x;
+    const screenWidth = this.sys.game.config.width;
+    const backgroundWidth = this.background.displayWidth;
+
+    
+    const offsetX = Phaser.Math.Clamp(
+      screenWidth / 2 - playerX, 
+      -backgroundWidth + screenWidth,
+      0 
+    );
+
+    this.background.setX(offsetX);
   }
 }
 
