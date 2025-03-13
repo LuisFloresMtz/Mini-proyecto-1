@@ -155,6 +155,27 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         console.log("Acción ejecutada: " + action);
       }
+
+      if (action === "records") {
+        window.location.href = "records.html";
+      }
+      else {
+        console.log("Acción ejecutada: " + action);
+      }
+
+      if(action === "instrucciones") {
+        window.location.href = "instrucciones.html";
+      }
+      else{
+        console.log("Acción ejecutada: " + action);
+      }
+
+      if(action === "creditos") {
+        window.location.href = "creditos.html";
+      }
+      else{
+        console.log("Acción ejecutada: " + action);
+      }
     }
   
     function showInfoPanel(action) {
