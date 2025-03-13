@@ -107,24 +107,27 @@ class MainScene extends Phaser.Scene {
     this.lava.refreshBody();
 
     //Plataforma movible
-    this.mobilePlatform = this.physics.add.sprite(width / 2, 20, "ground").setImmovable(true);
-    this.mobilePlatform.setScale(0.25,0.5);
+    this.mobilePlatform = this.physics.add.staticSprite(width / 2, 300, "ground");
+    this.mobilePlatform.setScale(0.25,0.5).refreshBody();
     this.tweens.add({
       targets: this.mobilePlatform,
-      y: 250,
-      duration: 2000,
+      y: 50,
+      duration: 3000,
       yoyo: true,
       repeat: -1,
-      ease: "Linear"
+      ease: "Linear",
+      onUpdate: () => { 
+        this.mobilePlatform.refreshBody();
+    }
     });
     
     
     this.player = new Player(this, width/2, 450, "dude");
 
-    this.physics.add.collider(this.player, this.mobilePlatform, function (player, mobilePlatform) {
-      player.setVelocityY(0); // Evita que el jugador rebote raro
-      player.y = mobilePlatform.y; // Mantiene al jugador sobre la plataforma
-  }, null, this);
+  //   this.physics.add.collider(this.player, this.mobilePlatform, function (player, mobilePlatform) {
+  //     player.setVelocityY(0); // Evita que el jugador rebote raro
+  //     player.y = mobilePlatform.y; // Mantiene al jugador sobre la plataforma
+  // }, null, this);
   
     
     this.anims.create({
@@ -149,17 +152,17 @@ class MainScene extends Phaser.Scene {
     
     this.cursors = this.input.keyboard.createCursorKeys();
     
-    this.stars = this.physics.add.group({
-      key: "star",
-      repeat: 6,
-      setXY: { x: 12, y: 0, stepX: width/7 },
-    });
+    // this.stars = this.physics.add.group({
+    //   key: "star",
+    //   repeat: 6,
+    //   setXY: { x: 12, y: 0, stepX: width/7 },
+    // });
     
-    this.stars.children.iterate((child) => {
-      child.setBounce(1);
-      child.setCollideWorldBounds(true);
-      child.setVelocity(Phaser.Math.Between(-200, 200), 40);
-    });
+    // this.stars.children.iterate((child) => {
+    //   child.setBounce(1);
+    //   child.setCollideWorldBounds(true);
+    //   child.setVelocity(Phaser.Math.Between(-200, 200), 40);
+    // });
     
     this.bombs = this.physics.add.group();
     this.scoreText = this.add.text(16, 16, "Score: 0", {
@@ -167,17 +170,26 @@ class MainScene extends Phaser.Scene {
       fill: "#000",
     });
     
-    this.physics.add.collider(this.player, this.mobilePlatform);
-    this.physics.add.collider(this.player, this.platforms);
-    this.physics.add.collider(this.stars, this.platforms);
-    this.physics.add.collider(this.bombs, this.platforms);
-    this.physics.add.overlap(
-      this.player,
-      this.stars,
-      (player, star) => player.collectStar(star),
+    this.physics.add.collider(
+      this.player, 
+      this.mobilePlatform,
+      function() {
+        this.player.setVelocity(0);
+        this.player.y = this.mobilePlatform.y - 30;
+      },
       null,
-      this
+      this  
     );
+    this.physics.add.collider(this.player, this.platforms);
+    //this.physics.add.collider(this.stars, this.platforms);
+    this.physics.add.collider(this.bombs, this.platforms);
+    // this.physics.add.overlap(
+    //   this.player,
+    //   this.stars,
+    //   (player, star) => player.collectStar(star),
+    //   null,
+    //   this
+    // );
     this.physics.add.collider(
       this.player,
       this.bombs,
