@@ -24,6 +24,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     this.scene.score += 100;
     this.scene.scoreText.setText("Score: " + this.scene.score);
     this.scene.timerText.destroy();
+    if(this.scene.score >= 500) this.scene.nextStage = true;
   }
 
   collectStar(star) {
@@ -31,9 +32,9 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     this.scene.score += 10;
     this.scene.scoreText.setText("Score: " + this.scene.score);
     this.itemCounter++;
-
+    if(this.scene.score >= 500) this.scene.nextStage = true;
     //Aparicion del item especial una vez agarró 10 items normales
-    if(this.itemCounter == 5) {
+    if(this.itemCounter == 10) {
       this.itemCounter = 0;
       let item = this.scene.specials.children.entries[Phaser.Math.Between(0, 1)];
       item.enableBody(true, item.x, item.y, true, true);
@@ -105,10 +106,10 @@ class MainScene extends Phaser.Scene {
   constructor() {
     super({ key: "MainScene" });
     this.score = 0;
-    this.player = new Player(this, width/2, 450, "dude");
   }
 
   init(data) {
+    this.nextStage = false
     this.gameOver = false;
     if (data.reset) {
       this.score = 0;
@@ -167,8 +168,7 @@ class MainScene extends Phaser.Scene {
         });
       });
     
-    
-    //this.player = new Player(this, width/2, 450, "dude");
+    this.player = new Player(this, width/2, 450, "dude");
     
     this.anims.create({
       key: "left",
@@ -296,6 +296,13 @@ class MainScene extends Phaser.Scene {
       });
     }
 
+    if(this.nextStage) {
+      return this.scene.start("Scene2", {
+        score: this.score,
+        player: this.player,
+      });
+    }
+
     if (this.cursors.left.isDown) {
       this.player.setVelocityX(-160);
       this.player.anims.play("left", true);
@@ -357,6 +364,13 @@ class Scene2 extends Phaser.Scene {
     super({key: "Scene2"});
   }
 
+  init(data) {
+    this.gameOver = false;
+    if (data.reset) {
+      this.score = 0;
+    }
+  }
+
   preload() {
     this.load.image("sky", "assets/sky.png");
     this.load.image("ground", "assets/platform.png");
@@ -367,27 +381,122 @@ class Scene2 extends Phaser.Scene {
       frameHeight: 48,
     });
   }
-  create() {
 
+  create() {
+    this.add
+    .image(0, 0, "sky")
+    .setOrigin(0, 0)
+    .setScale(width / 800, height / 600)
+    .setScrollFactor(0);
+
+    this.physics.world.setBounds(0, 0, width * 2, height);
+
+    this.player = new Player(this, width/2, 450, "dude");
+    this.cameras.main.setBounds(0, 0, width * 3, height);
+    this.cameras.main.startFollow(this.player, false, 1, 1, -width / 2, 0);
+
+    //this.cameras.main.setDeadzone(0, 0);
+    //this.cameras.main.centerToBounds();
+
+    this.anims.create({
+      key: "left",
+      frames: this.anims.generateFrameNumbers("dude", { start: 0, end: 3 }),
+      frameRate: 10,
+      repeat: -1,
+    });
+    
+    this.anims.create({
+      key: "turn",
+      frames: [{ key: "dude", frame: 4 }],
+      frameRate: 20,
+    });
+    
+    this.anims.create({
+      key: "right",
+      frames: this.anims.generateFrameNumbers("dude", { start: 5, end: 8 }),
+      frameRate: 10,
+      repeat: -1,
+    });
+    
+    this.cursors = this.input.keyboard.createCursorKeys();
+
+    this.platforms = this.physics.add.staticGroup();
+
+    // Suelo
+    this.platforms.create(0, 568, "ground").setOrigin(0,0).setScale((width * 2) / 400, 2).refreshBody();
+
+    // Plataformas
+    this.platforms.create(width * 2 * 0.2, height * 0.7, "ground").setScale(1.2, 1).refreshBody();
+    this.platforms.create(width * 2 * 0.3, height * 0.3, "ground").setScale(0.8, 1).refreshBody();
+    this.platforms.create(width * 2 * 0.45, height * 0.55, "ground").setScale(1.3, 1).refreshBody();
+    this.platforms.create(width * 2 * 0.62, height * 0.3, "ground").setScale(0.8, 1).refreshBody();
+    this.platforms.create(width * 2 * 0.65, height * 0.7, "ground").setScale(0.6, 1).refreshBody();
+    this.platforms.create(width * 2 * 0.8, height * 0.55, "ground").setScale(1.2, 1).refreshBody();
+
+    // Colision
+    this.physics.add.collider(this.player, this.platforms);
   }
 
   update() {
+    if (this.gameOver) {
+      try {
+        let scores = JSON.parse(localStorage.getItem("scores")) || [];
 
+        const existingScore = scores.find(
+          (entry) => entry.nombre === this.player.nombre
+        );
+
+        if (!existingScore) {
+          scores.push({ nombre: this.player.nombre, score: this.score });
+        } else if (this.score > existingScore.score) {
+          existingScore.score = this.score;
+        }
+
+        scores.sort((a, b) => b.score - a.score);
+
+        localStorage.setItem("scores", JSON.stringify(scores));
+      } catch (error) {
+        console.error("Error al guardar los puntajes:", error);
+      }
+      console.log("Cambiando a GameOverScene");
+      return this.scene.start("GameOverScene", {
+        score: this.score,
+        player: this.player,
+      });
+    }
+
+    if (this.cursors.left.isDown) {
+      this.player.setVelocityX(-160);
+      this.player.anims.play("left", true);
+      if (this.cursors.shift.isDown) this.player.dash("left");
+    } else if (this.cursors.right.isDown) {
+      this.player.setVelocityX(160);
+      this.player.anims.play("right", true);
+      if (this.cursors.shift.isDown) this.player.dash("right");
+    } else {
+      this.player.setVelocityX(0);
+      this.player.anims.play("turn");
+    }
+
+    if (this.cursors.up.isDown && this.player.body.touching.down) {
+      this.player.setVelocityY(-330);
+    }
   }
 }
 
 const config = {
   type: Phaser.AUTO,
-  width: width,
+  width: width * 2,
   height: height,
   physics: {
     default: "arcade",
     arcade: {
       gravity: { y: 300 },
-      debug: false,
+      debug: true,
     },
   },
-  scene: [MainScene, GameOverScene],
+  scene: [Scene2, GameOverScene, MainScene],
+  //scene: [MainScene, GameOverScene, Scene2],
 };
 
 const game = new Phaser.Game(config);
