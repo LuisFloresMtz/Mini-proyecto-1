@@ -167,8 +167,20 @@ class MainScene extends Phaser.Scene {
     }
   }
 
+  hitBullet(bullet, enemy) {
+    enemy.destroy();
+    bullet.destroy();
+
+    if (typeof this.score === "number") {
+      this.score += 10;
+      if (this.scoreText) {
+        this.scoreText.setText("Score: " + this.score);
+      }
+    }
+  }
+
   preload() {
-    this.load.image("sky", "assets/sky.png");
+    this.load.image("sky", "assets/sky.gif");
     this.load.image("ground", "assets/platform.png");
     this.load.image("bullet", "assets/bullet.png");
     this.load.spritesheet("rick", "assets/rick.png", {
@@ -186,17 +198,18 @@ class MainScene extends Phaser.Scene {
   }
 
   create() {
+    const screenWidth = this.sys.game.config.width;
+    const screenHeight = this.sys.game.config.height;
+
     console.log(this.textures.list);
 
     this.background = this.add
       .image(0, 0, "sky")
       .setOrigin(0, 0)
-      .setScale(
-        this.sys.game.config.width / 800,
-        this.sys.game.config.height / 600
-      );
+      .setDisplaySize(screenWidth * 2, screenHeight);
 
     this.platforms = this.physics.add.staticGroup();
+    this.platforms.create(400, 568, "ground").setScale(6).refreshBody();
     this.platforms.create(400, 568, "ground").setScale(6).refreshBody();
     this.platforms.create(600, 400, "ground");
     this.platforms.create(50, 250, "ground");
@@ -279,6 +292,7 @@ class MainScene extends Phaser.Scene {
     });
 
     this.cursors = this.input.keyboard.createCursorKeys();
+
     this.shootKey = this.input.keyboard.addKey(
       Phaser.Input.Keyboard.KeyCodes.X
     );
@@ -293,13 +307,25 @@ class MainScene extends Phaser.Scene {
           const existingScore = scores.find(
             (entry) => entry.nombre === this.player.nombre
           );
+          if (this.player.nombre) {
+            const existingScore = scores.find(
+              (entry) => entry.nombre === this.player.nombre
+            );
 
-          if (!existingScore) {
-            scores.push({ nombre: this.player.nombre, score: this.score });
-          } else if (this.score > existingScore.score) {
-            existingScore.score = this.score;
+            if (!existingScore) {
+              scores.push({ nombre: this.player.nombre, score: this.score });
+            } else if (this.score > existingScore.score) {
+              existingScore.score = this.score;
+            }
+            if (!existingScore) {
+              scores.push({ nombre: this.player.nombre, score: this.score });
+            } else if (this.score > existingScore.score) {
+              existingScore.score = this.score;
+            }
+
+            scores.sort((a, b) => b.score - a.score);
+            localStorage.setItem("scores", JSON.stringify(scores));
           }
-
           scores.sort((a, b) => b.score - a.score);
           localStorage.setItem("scores", JSON.stringify(scores));
         }
@@ -327,18 +353,22 @@ class MainScene extends Phaser.Scene {
       this.cursors.up.isDown &&
       (this.player.body.touching.down || this.player.body.blocked.down)
     ) {
-      this.player.setVelocityY(-330);
-    }
-
-    this.updateBackgroundPosition();
-
-    this.enemies.children.iterate((enemy) => {
-      if (enemy) {
-        enemy.move();
+      if (
+        this.cursors.up.isDown &&
+        (this.player.body.touching.down || this.player.body.blocked.down)
+      ) {
+        this.player.setVelocityY(-330);
       }
-    });
-  }
 
+      this.updateBackgroundPosition();
+
+      this.enemies.children.iterate((enemy) => {
+        if (enemy) {
+          enemy.move();
+        }
+      });
+    }
+  }
   updateBackgroundPosition() {
     const playerX = this.player.x;
     const screenWidth = this.sys.game.config.width;
