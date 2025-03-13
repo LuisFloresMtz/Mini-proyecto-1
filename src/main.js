@@ -297,6 +297,7 @@ class MainScene extends Phaser.Scene {
     }
 
     if(this.nextStage) {
+      //game.config.width = width * 2;
       return this.scene.start("Scene2", {
         score: this.score,
         player: this.player,
@@ -362,6 +363,7 @@ class GameOverScene extends Phaser.Scene {
 class Scene2 extends Phaser.Scene {
   constructor() {
     super({key: "Scene2"});
+    this.levelWidth = width * 2;
   }
 
   init(data) {
@@ -389,11 +391,13 @@ class Scene2 extends Phaser.Scene {
     .setScale(width / 800, height / 600)
     .setScrollFactor(0);
 
-    this.physics.world.setBounds(0, 0, width * 2, height);
+    this.physics.world.setBounds(0, 0, this.levelWidth, height);
 
-    this.player = new Player(this, width/2, 450, "dude");
-    this.cameras.main.setBounds(0, 0, width * 3, height);
-    this.cameras.main.startFollow(this.player, false, 1, 1, -width / 2, 0);
+    //Movimiento de camaras
+    this.player = new Player(this, 10, 450, "dude");
+    this.cameras.main.setBounds(0, 0, this.levelWidth, height);
+    this.cameras.main.startFollow(this.player, true, 0.5, 0.5);
+    //this.cameras.main.startFollow(this.player, false, 1, 1, -width / 2, 0);
 
     //this.cameras.main.setDeadzone(0, 0);
     //this.cameras.main.centerToBounds();
@@ -486,7 +490,7 @@ class Scene2 extends Phaser.Scene {
 
 const config = {
   type: Phaser.AUTO,
-  width: width * 2,
+  width: width,
   height: height,
   physics: {
     default: "arcade",
@@ -495,8 +499,8 @@ const config = {
       debug: true,
     },
   },
-  scene: [Scene2, GameOverScene, MainScene],
   //scene: [MainScene, GameOverScene, Scene2],
+  scene: [Scene2, GameOverScene, MainScene],
 };
 
 const game = new Phaser.Game(config);
