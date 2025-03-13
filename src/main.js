@@ -1,4 +1,4 @@
-import Scente2 from "level2.js"
+
 
 const width = window.innerWidth;
 const height = window.innerHeight;
@@ -33,10 +33,10 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     this.itemCounter++;
 
     //Aparicion del item especial una vez agarró 10 items normales
-    if(this.itemCounter == 10) {
+    if(this.itemCounter == 5) {
       this.itemCounter = 0;
-      let item = this.scene.special;
-      item.enableBody(true, width/2, height/2, true, true);
+      let item = this.scene.specials.children.entries[Phaser.Math.Between(0, 1)];
+      item.enableBody(true, item.x, item.y, true, true);
       //Aparece en pantalla contador para agarrar el especial
       let counter = 5;
       let timerText = this.scene.add.text(300, 300, "5", {
@@ -105,6 +105,7 @@ class MainScene extends Phaser.Scene {
   constructor() {
     super({ key: "MainScene" });
     this.score = 0;
+    this.player = new Player(this, width/2, 450, "dude");
   }
 
   init(data) {
@@ -130,45 +131,44 @@ class MainScene extends Phaser.Scene {
       .image(0, 0, "sky")
       .setOrigin(0, 0)
       .setScale(width / 800, height / 600);
-
-    this.platforms = this.physics.add.staticGroup(); //Crea el grupo de plataformas
-    //Añade cada plataforma en su respectiva posición
-    this.platforms.create(width/2, 568, "ground").setScale(2.5).refreshBody();
-    this.platforms.create(width - 350, 400, "ground");
-    this.platforms.create(350, 400, "ground");
-    this.platforms.create(width - 300, 220, "ground");
-    this.platforms.create(300, 220, "ground");
+      
+      //Creación de lava
+      this.lava = this.physics.add.staticSprite(0, 600, "ground");
+      this.lava.setScale(1,2);
+      this.lava.displayWidth = width * 2;
+      this.lava.setTint(0xff0000);
+      this.lava.refreshBody();
+      
+      this.platforms = this.physics.add.staticGroup(); //Crea el grupo de plataformas
+      //Añade cada plataforma en su respectiva posición
+      this.platforms.create(width/2, 600, "ground").setScale(2.5).refreshBody();
+      this.platforms.create(width - 400, 400, "ground");
+      this.platforms.create(400, 400, "ground");
+      this.platforms.create(width - 500, 220, "ground").setScale(0.5, 0.75).refreshBody();
+      this.platforms.create(500, 220, "ground").setScale(0.5, 0.75).refreshBody();
+      
+      
+      //Plataforma movible
+      this.mobilePlatforms = this.physics.add.staticGroup(); //Crea el grupo de plataformas movibles
+      //this.mobilePlatform = this.physics.add.staticSprite(width / 2, 300, "ground");
+      this.mobilePlatforms.create(width - 100, 125, "ground").setScale(0.25,0.5).refreshBody();
+      this.mobilePlatforms.create(100, 125, "ground").setScale(0.25,0.5).refreshBody();
+      this.mobilePlatforms.children.iterate((child) => {
+        this.tweens.add({
+          targets: child,
+          y: 300,
+          duration: 3000,
+          yoyo: true,
+          repeat: -1,
+          ease: "Linear",
+          onUpdate: () => { 
+            child.refreshBody();
+          }
+        });
+      });
     
-    //Creación de lava
-    this.lava = this.physics.add.staticSprite(0, 600, "ground");
-    this.lava.setScale(1,2);
-    this.lava.displayWidth = width * 2;
-    this.lava.setTint(0xff0000);
-    this.lava.refreshBody();
-
-    //Plataforma movible
-    this.mobilePlatform = this.physics.add.staticSprite(width / 2, 300, "ground");
-    this.mobilePlatform.setScale(0.25,0.5).refreshBody();
-    this.tweens.add({
-      targets: this.mobilePlatform,
-      y: 50,
-      duration: 3000,
-      yoyo: true,
-      repeat: -1,
-      ease: "Linear",
-      onUpdate: () => { 
-        this.mobilePlatform.refreshBody();
-    }
-    });
     
-    
-    this.player = new Player(this, width/2, 450, "dude");
-
-  //   this.physics.add.collider(this.player, this.mobilePlatform, function (player, mobilePlatform) {
-  //     player.setVelocityY(0); // Evita que el jugador rebote raro
-  //     player.y = mobilePlatform.y; // Mantiene al jugador sobre la plataforma
-  // }, null, this);
-  
+    //this.player = new Player(this, width/2, 450, "dude");
     
     this.anims.create({
       key: "left",
@@ -214,11 +214,17 @@ class MainScene extends Phaser.Scene {
     });
     
     //Creacion de consumible especial
-    this.special = this.physics.add.staticSprite(width / 2, height / 2, "star").setTint(0xff0000);
-    this.special.disableBody(true, true);
+    this.specials = this.physics.add.staticGroup();
+    this.specials.create(width - 100, 110, "star").setTint(0xff0000);
+    this.specials.create(100, 110, "star").setTint(0xff0000);
+    this.specials.children.iterate((child) => {
+      child.disableBody(true, true);
+    });
+
+    
     this.physics.add.overlap(
       this.player,
-      this.special,
+      this.specials,
       (player, special) => player.collcectSpecial(special),
       null,
       this
@@ -234,7 +240,9 @@ class MainScene extends Phaser.Scene {
       null,
       this  
     );
+    this.physics.add.collider(this.mobilePlatforms, this.stars);
     this.physics.add.collider(this.player, this.platforms);
+    this.physics.add.collider(this.player, this.mobilePlatforms);
     this.physics.add.collider(this.stars, this.platforms);
     this.physics.add.collider(this.bombs, this.platforms);
     this.physics.add.overlap(
@@ -341,6 +349,30 @@ class GameOverScene extends Phaser.Scene {
     this.input.keyboard.once("keydown", () => {
       this.scene.start("MainScene", { reset: true });
     });
+  }
+}
+
+class Scene2 extends Phaser.Scene {
+  constructor() {
+    super({key: "Scene2"});
+  }
+
+  preload() {
+    this.load.image("sky", "assets/sky.png");
+    this.load.image("ground", "assets/platform.png");
+    this.load.image("star", "assets/star.png");
+    this.load.image("bomb", "assets/bomb.png");
+    this.load.spritesheet("dude", "assets/dude.png", {
+      frameWidth: 32,
+      frameHeight: 48,
+    });
+  }
+  create() {
+
+  }
+
+  update() {
+
   }
 }
 
