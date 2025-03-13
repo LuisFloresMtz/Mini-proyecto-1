@@ -1,3 +1,5 @@
+import Scente2 from "level2.js"
+
 const width = window.innerWidth;
 const height = window.innerHeight;
 
@@ -14,12 +16,50 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     this.nombre = nombre;
     this.score = score;
     this.dashTimer = 0;
+    this.itemCounter = 0;
+  }
+
+  collcectSpecial(item) {
+    item.disableBody(true,true);
+    this.scene.score += 100;
+    this.scene.scoreText.setText("Score: " + this.scene.score);
+    this.scene.timerText.destroy();
   }
 
   collectStar(star) {
     star.disableBody(true, true);
     this.scene.score += 10;
     this.scene.scoreText.setText("Score: " + this.scene.score);
+    this.itemCounter++;
+
+    //Aparicion del item especial una vez agarró 10 items normales
+    if(this.itemCounter == 10) {
+      this.itemCounter = 0;
+      let item = this.scene.special;
+      item.enableBody(true, width/2, height/2, true, true);
+      //Aparece en pantalla contador para agarrar el especial
+      let counter = 5;
+      let timerText = this.scene.add.text(300, 300, "5", {
+        fontSize: '32px',
+        fill: '#ffffff'
+        }
+      );
+      this.scene.timerText = timerText;
+      //Agrega un temporizador para obtener el objeto
+      this.scene.time.addEvent({
+        delay: 1000,
+        callback: () => {
+          counter--;
+          timerText.setText(counter);
+        },
+        repeat: 4 
+      });
+
+      setTimeout(() => {
+        item.disableBody(true,true);
+        timerText.destroy();
+      }, 6000);
+    }
 
     if (this.scene.stars.countActive(true) === 0) {
       this.scene.stars.children.iterate((child) => {
@@ -152,24 +192,38 @@ class MainScene extends Phaser.Scene {
     
     this.cursors = this.input.keyboard.createCursorKeys();
     
-    // this.stars = this.physics.add.group({
-    //   key: "star",
-    //   repeat: 6,
-    //   setXY: { x: 12, y: 0, stepX: width/7 },
-    // });
+    //Creación de consumibles
+    this.stars = this.physics.add.group({
+      key: "star",
+      repeat: 6,
+      setXY: { x: 12, y: 0, stepX: width/7 },
+    });
     
-    // this.stars.children.iterate((child) => {
-    //   child.setBounce(1);
-    //   child.setCollideWorldBounds(true);
-    //   child.setVelocity(Phaser.Math.Between(-200, 200), 40);
-    // });
+    //Agregar fisicas a los consumibles
+    this.stars.children.iterate((child) => {
+      child.setBounce(1);
+      child.setCollideWorldBounds(true);
+      child.setVelocity(Phaser.Math.Between(-200, 200), 40);
+    });
+
     
-    this.bombs = this.physics.add.group();
+    this.bombs = this.physics.add.group(); //Crea bombas
     this.scoreText = this.add.text(16, 16, "Score: 0", {
       fontSize: "32px",
       fill: "#000",
     });
     
+    //Creacion de consumible especial
+    this.special = this.physics.add.staticSprite(width / 2, height / 2, "star").setTint(0xff0000);
+    this.special.disableBody(true, true);
+    this.physics.add.overlap(
+      this.player,
+      this.special,
+      (player, special) => player.collcectSpecial(special),
+      null,
+      this
+    );
+
     this.physics.add.collider(
       this.player, 
       this.mobilePlatform,
@@ -181,15 +235,15 @@ class MainScene extends Phaser.Scene {
       this  
     );
     this.physics.add.collider(this.player, this.platforms);
-    //this.physics.add.collider(this.stars, this.platforms);
+    this.physics.add.collider(this.stars, this.platforms);
     this.physics.add.collider(this.bombs, this.platforms);
-    // this.physics.add.overlap(
-    //   this.player,
-    //   this.stars,
-    //   (player, star) => player.collectStar(star),
-    //   null,
-    //   this
-    // );
+    this.physics.add.overlap(
+      this.player,
+      this.stars,
+      (player, star) => player.collectStar(star),
+      null,
+      this
+    );
     this.physics.add.collider(
       this.player,
       this.bombs,
