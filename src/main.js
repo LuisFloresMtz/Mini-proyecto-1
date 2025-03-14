@@ -17,6 +17,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
 
     this.nombre = nombre;
     this.score = score;
+    this.lives = 3;
     this.dashTimer = 0;
     this.itemCounter = 0;
     this.shooting = false;
@@ -90,11 +91,18 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
-  hitBomb() {
+  takeDamage() {
     this.scene.physics.pause();
     this.setTint(0xff0000);
     this.anims.play("turn");
-    this.scene.gameOver = true;
+    this.lives--;
+    if(this.lives == 0){
+      this.scene.gameOver = true;
+    }
+    setTimeout(() => {
+      this.clearTint();
+      this.scene.physics.resume();
+    }, 250);
   }
 
   dash(side) {
@@ -233,6 +241,7 @@ class MainScene extends Phaser.Scene {
   constructor() {
     super({ key: "MainScene" });
     this.score = 0;
+    this.pause = false;
   }
 
   init(data) {
@@ -313,6 +322,9 @@ class MainScene extends Phaser.Scene {
     //---------------------------KEYBINDS------------------------------------
     this.shootKey = this.input.keyboard.addKey(
       Phaser.Input.Keyboard.KeyCodes.X
+    );
+    this.pauseKey = this.input.keyboard.addKey(
+      Phaser.Input.Keyboard.KeyCodes.ESC
     );
 
     //--------------------------PUNTUACIÓN-----------------------------------
@@ -416,17 +428,18 @@ class MainScene extends Phaser.Scene {
     this.physics.add.collider(
       this.player,
       this.bombs,
-      (player, bomb) => player.hitBomb(),
+      (player, bomb) => player.takeDamage(),
       null,
       this
     );
     this.physics.add.collider(
       this.player,
       this.lava, 
-      (player) => player.hitBomb(),
+      (player) => player.takeDamage(),
       null, 
       this
     );
+  
   }
 
   update() {
@@ -457,8 +470,12 @@ class MainScene extends Phaser.Scene {
       });
     }
 
+    if(Phaser.Input.Keyboard.JustDown(this.pauseKey)) { 
+      this.scene.launch("PauseScene", {scene: this.scene.key});
+      this.scene.pause();
+    }
+    
     if(this.nextStage) {
-      //game.config.width = width * 2;
       return this.scene.start("Scene2", {
         score: this.score,
         player: this.player,
@@ -518,6 +535,7 @@ class Scene2 extends Phaser.Scene {
   constructor() {
     super({key: "Scene2"});
     this.levelWidth = width * 2;
+    this.pause = false;
   }
 
   hitBullet(bullet, enemy) {
@@ -871,6 +889,12 @@ class FinalBossScene extends Phaser.Scene {
       });
     }
 
+    //----------------MANEJO DE PAUSA----------------------------------------------
+    if(Phaser.Input.Keyboard.JustDown(this.pauseKey)) { 
+      this.scene.launch("PauseScene", {scene: this.scene.key});
+      this.scene.pause();
+    }
+
     if(this.nextStage) {
       return this.scene.start("FinalBossScene", {
         score: this.score,
@@ -952,6 +976,81 @@ class GameOverScene extends Phaser.Scene {
   }
 }
 
+class PauseScene extends Phaser.Scene {
+  constructor() {
+      super("PauseScene");
+  }
+
+  init(data) {
+    this.gameScene = data.scene;
+  }
+
+  create() {
+      let div = document.createElement("div");
+      div.innerHTML = 
+        `
+        <ul id="menu-list">
+          <li class="menu-item" data-action="jugar">
+           
+            <span>Jugar</span>
+          </li>
+          <li class="menu-item" data-action="records">
+            <i class="fa-solid fa-trophy menu-icon"></i>
+            <span>Records</span>
+          </li>
+          <li class="menu-item" data-action="instrucciones">
+            <i class="fa-solid fa-question menu-icon"></i>
+            <span>Instrucciones</span>
+          </li>
+          <li class="menu-item" data-action="creditos">
+            <i class="fa-solid fa-user group menu-icon"></i>
+            <span>Créditos</span>
+          </li>
+        </ul>
+      `;
+
+      div.id = "menu-container" ;
+
+      div.style.position = "absolute";
+        div.style.top = "50%";
+        div.style.left = "50%";
+        div.style.transform = "translate(-50%, -50%)";
+        div.style.textAlign = "center";
+
+        document.body.appendChild(div); 
+
+      // this.add.text(400, 200, "Juego Pausado", { fontSize: "32px", fill: "#fff" }).setOrigin(0.5);
+
+      // this.resumeButton = this.add.text(400, 300, "Reanudar", { fontSize: "24px", fill: "#0f0" })
+      //     .setOrigin(0.5)
+      //     .setInteractive()
+      //     .on("pointerdown", () => {
+      //         this.scene.resume(this.gameScene);
+      //         this.scene.stop();
+      //     });
+
+      // this.menuButton = this.add.text(400, 350, "Menú Principal", { fontSize: "24px", fill: "#f00" })
+      //     .setOrigin(0.5)
+      //     .setInteractive()
+      //     .on("pointerdown", () => {
+      //         this.scene.stop(this.gameScene);
+      //         this.scene.start("MenuScene"); // Volver al menú
+      // });
+
+      this.pauseKey = this.input.keyboard.addKey(
+        Phaser.Input.Keyboard.KeyCodes.ESC
+      );
+  }
+
+  update() {
+    if(Phaser.Input.Keyboard.JustDown(this.pauseKey)) {
+      this.scene.resume(this.gameScene);
+      this.scene.stop();
+    }
+  }
+}
+
+
 const config = {
   type: Phaser.AUTO,
   width: width,
@@ -964,7 +1063,8 @@ const config = {
     },
   },
   //scene: [Scene2]
-  scene: [MainScene, Scene2, GameOverScene, FinalBossScene],
+  scene: [MainScene, Scene2, GameOverScene, FinalBossScene, PauseScene],
+  dom: { createContainer: true }
 };
 
 const game = new Phaser.Game(config);
