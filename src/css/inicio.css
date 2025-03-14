@@ -1,0 +1,75 @@
+/* Reinicio básico */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Contenedor principal para el canvas */
+.screen.fullscreen {
+  width: 100%;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+  background-color: #000; /* Fondo negro para efecto retro */
+}
+
+/* Modo windowed (opcional) */
+.screen.windowed {
+  width: 800px;
+  height: 600px;
+  margin: 20px auto;
+  position: relative;
+  overflow: hidden;
+  background-color: #000;
+  border: 2px solid #ff6700;
+  box-shadow: 0 0 20px #ff6700;
+}
+
+/* Estilos para el canvas (oculto inicialmente) */
+#retro-canvas {
+  width: 100%;
+  height: 100%;
+  display: none; /* Se mostrará luego del video */
+}
+
+/* Contenedor del video de introducción */
+#intro-video-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  z-index: 10; /* Siempre por encima */
+}
+
+/* Ajuste del video para que se vea completo sin recorte */
+#intro-video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+}
+
+/* Botón "Skip Intro" en esquina inferior derecha, estilo retro */
+#skip-button {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  background: #000000; /* Negro */
+  color: #ffdd33;      /* Amarillo Neón */
+  border: 2px solid #ffdd33;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 14px;
+  padding: 8px 12px;
+  cursor: pointer;
+  z-index: 20;
+  transition: background 0.2s, color 0.2s;
+}
+
+#skip-button:hover {
+  background: #ffdd33;
+  color: #000;
+}
+
