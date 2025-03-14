@@ -7,7 +7,7 @@
   }
   
   body {
-    background-color: #2a0134; /* Púrpura oscuro */
+    background: linear-gradient(135deg, #2a0134, #1b0e2e);
     display: grid;
     place-items: center;
     min-height: 100vh;

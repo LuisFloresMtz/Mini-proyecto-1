@@ -33,7 +33,7 @@
   /* Secciones: la primera (.purple) y la última (.black) se mantienen intactas */
   /* Primera sección: Fondo Principal */
   .purple {
-    background: #2a0134;
+    background: linear-gradient(135deg, #2a0134, #1b0e2e);
     color: #ffdd33;
   }
   
