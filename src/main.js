@@ -31,7 +31,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     this.scene.score += 100;
     this.scene.scoreText.setText("Score: " + this.scene.score);
     this.scene.timerText.destroy();
-    if(this.scene.score >= 500) this.scene.nextStage = true;
+    if(this.scene.score >= 10) this.scene.nextStage = true;
   }
 
   collectStar(star) {
@@ -39,7 +39,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     this.scene.score += 10;
     this.scene.scoreText.setText("Score: " + this.scene.score);
     this.itemCounter++;
-    if(this.scene.score >= 500) this.scene.nextStage = true;
+    if(this.scene.score >= 10) this.scene.nextStage = true;
     //Aparicion del item especial una vez agarró 10 items normales
     if(this.itemCounter == 10) {
       this.itemCounter = 0;
@@ -88,6 +88,23 @@ class Player extends Phaser.Physics.Arcade.Sprite {
       bomb.setCollideWorldBounds(true);
       bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
       bomb.allowGravity = false;
+    }
+  }
+
+  hitBomb() {
+    this.scene.physics.pause();
+    this.setTint(0xff0000);
+    this.anims.play("turn");
+    this.scene.gameOver = true;
+  }
+
+  dash(side) {
+    if (this.dashTimer === 0) {
+      if (side === "left") this.x -= 50;
+      else if (side === "right") this.x += 50;
+
+      this.dashTimer = 1;
+      setTimeout(() => (this.dashTimer = 0), 2000);
     }
   }
 
@@ -225,30 +242,6 @@ class MainScene extends Phaser.Scene {
     }
   }
 
-  hitBullet(bullet, enemy) {
-    enemy.destroy();
-    bullet.destroy();
-
-    if (typeof this.score === "number") {
-      this.score += 10;
-      if (this.scoreText) {
-        this.scoreText.setText("Score: " + this.score);
-      }
-    }
-  }
-
-  hitBullet(bullet, enemy) {
-    enemy.destroy();
-    bullet.destroy();
-
-    if (typeof this.score === "number") {
-      this.score += 10;
-      if (this.scoreText) {
-        this.scoreText.setText("Score: " + this.score);
-      }
-    }
-  }
-
   preload() {
     this.load.image("sky", "assets/sky.gif");
     this.load.image("ground", "assets/platform.png");
@@ -256,14 +249,6 @@ class MainScene extends Phaser.Scene {
     this.load.image("star", "assets/star.png");
     this.load.image("bomb", "assets/bomb.png");
     this.load.spritesheet("rick", "assets/rick.png", {
-      frameWidth: 40,
-      frameHeight: 50,
-    });
-    this.load.spritesheet("morty", "assets/morty.png", {
-      frameWidth: 40,
-      frameHeight: 50,
-    });
-    this.load.spritesheet("boss", "assets/boss.png", {
       frameWidth: 40,
       frameHeight: 50,
     });
@@ -275,30 +260,34 @@ class MainScene extends Phaser.Scene {
 
     console.log(this.textures.list);
 
+    //----------------------------------FONDO--------------------------------
     this.background = this.add
       .image(0, 0, "sky")
       .setOrigin(0, 0)
       .setScale(width / 800, height / 600);
       //.setDisplaySize(screenWidth * 2, screenHeight);
 
-    //Creación de lava
+    //----------------------------------LAVA------------------------------
     this.lava = this.physics.add.staticSprite(0, 600, "ground");
     this.lava.setScale(1,2);
     this.lava.displayWidth = width * 2;
     this.lava.setTint(0xff0000);
     this.lava.refreshBody();
     
-    this.platforms = this.physics.add.staticGroup(); //Crea el grupo de plataformas
-    //Añade cada plataforma en su respectiva posición
+    //-------------------------------PLATAFORMAS------------------------------------
+    this.platforms = this.physics.add.staticGroup(); 
+    
+    //Suelo
     this.platforms.create(width/2, 600, "ground").setScale(2.5).refreshBody();
+
+    //Plataformas flotantes
     this.platforms.create(width - 400, 400, "ground");
     this.platforms.create(400, 400, "ground");
     this.platforms.create(width - 500, 220, "ground").setScale(0.5, 0.75).refreshBody();
     this.platforms.create(500, 220, "ground").setScale(0.5, 0.75).refreshBody();
     
-    
-    //Plataforma movible
-    this.mobilePlatforms = this.physics.add.staticGroup(); //Crea el grupo de plataformas movibles
+    //Plataformas movibles
+    this.mobilePlatforms = this.physics.add.staticGroup();
     //this.mobilePlatform = this.physics.add.staticSprite(width / 2, 300, "ground");
     this.mobilePlatforms.create(width - 100, 125, "ground").setScale(0.25,0.5).refreshBody();
     this.mobilePlatforms.create(100, 125, "ground").setScale(0.25,0.5).refreshBody();
@@ -315,37 +304,20 @@ class MainScene extends Phaser.Scene {
         }
       });
     });
-  
+    
+    //---------------------------JUGADOR---------------------------------
     this.player = new Player(this, width / 2, 450, "rick", "Luis", 0);
+    this.cursors = this.input.keyboard.createCursorKeys();
 
-    this.enemies = this.physics.add.group();
+    //---------------------------KEYBINDS------------------------------------
+    this.shootKey = this.input.keyboard.addKey(
+      Phaser.Input.Keyboard.KeyCodes.X
+    );
 
-    for (let i = 0; i < 12; i++) {
-      let x = 12 + i * 70;
-      let enemy = new Enemy(this, x, 0, "morty"); // Crear instancia de Enemy
-      this.enemies.add(enemy); // Agregar manualmente al grupo
-    }
-
-    this.enemies.getChildren().forEach((enemy) => {
-      console.log(enemy.texture.key); // Verifica el key de la textura
-    });
-
-    this.enemies.children.iterate((enemy) => {
-      if (enemy) {
-        enemy.setCollideWorldBounds(true);
-        enemy.setVelocityX(Phaser.Math.Between(-200, 200));
-      }
-    });
-
+    //--------------------------PUNTUACIÓN-----------------------------------
     this.scoreText = this.add.text(16, 16, "Score: 0", {
       fontSize: "32px",
-      fill: "#000",
-    });
-
-    this.physics.add.collider(this.enemies, this.platforms);
-    this.physics.add.collider(this.player, this.enemies, (player, enemy) => {
-      this.gameOver = true;
-      this.scene.start("FinalBossScene", { score: this.score });
+      fill: "#FFFF",
     });
 
     this.physics.add.collider(this.player, this.platforms);
@@ -358,6 +330,7 @@ class MainScene extends Phaser.Scene {
       }
     );
 
+    //-----------------------------------ANIMACIONES----------------------------------
     this.anims.create({
       key: "leftR",
       frames: this.anims.generateFrameNumbers("rick", { start: 0, end: 3 }),
@@ -392,33 +365,21 @@ class MainScene extends Phaser.Scene {
       repeat: -1,
     });
     
-    this.cursors = this.input.keyboard.createCursorKeys();
-    this.shootKey = this.input.keyboard.addKey(
-      Phaser.Input.Keyboard.KeyCodes.X
-    );
 
-    //Creación de consumibles
+    //-------------------------------CONSUMIBLES---------------------------------
     this.stars = this.physics.add.group({
       key: "star",
       repeat: 6,
       setXY: { x: 12, y: 0, stepX: width/7 },
     });
     
-    //Agregar fisicas a los consumibles
     this.stars.children.iterate((child) => {
       child.setBounce(1);
       child.setCollideWorldBounds(true);
       child.setVelocity(Phaser.Math.Between(-200, 200), 40);
     });
 
-    
-    this.bombs = this.physics.add.group(); //Crea bombas
-    this.scoreText = this.add.text(16, 16, "Score: 0", {
-      fontSize: "32px",
-      fill: "#000",
-    });
-    
-    //Creacion de consumible especial
+    //---------------------------CONSUMIBLE ESPECIAL---------------------------
     this.specials = this.physics.add.staticGroup();
     this.specials.create(width - 100, 110, "star").setTint(0xff0000);
     this.specials.create(100, 110, "star").setTint(0xff0000);
@@ -427,6 +388,10 @@ class MainScene extends Phaser.Scene {
     });
 
     
+    //------------------------------BOMBAS------------------------------
+    this.bombs = this.physics.add.group();
+    
+    //----------------------------FISICAS---------------------------------
     this.physics.add.overlap(
       this.player,
       this.specials,
@@ -478,32 +443,19 @@ class MainScene extends Phaser.Scene {
       try {
         let scores = JSON.parse(localStorage.getItem("scores")) || [];
 
-        if (this.player.nombre) {
-          const existingScore = scores.find(
-            (entry) => entry.nombre === this.player.nombre
-          );
-          if (this.player.nombre) {
-            const existingScore = scores.find(
-              (entry) => entry.nombre === this.player.nombre
-            );
+        const existingScore = scores.find(
+          (entry) => entry.nombre === this.player.nombre
+        );
 
-            if (!existingScore) {
-              scores.push({ nombre: this.player.nombre, score: this.score });
-            } else if (this.score > existingScore.score) {
-              existingScore.score = this.score;
-            }
-            if (!existingScore) {
-              scores.push({ nombre: this.player.nombre, score: this.score });
-            } else if (this.score > existingScore.score) {
-              existingScore.score = this.score;
-            }
-
-            scores.sort((a, b) => b.score - a.score);
-            localStorage.setItem("scores", JSON.stringify(scores));
-          }
-          scores.sort((a, b) => b.score - a.score);
-          localStorage.setItem("scores", JSON.stringify(scores));
+        if (!existingScore) {
+          scores.push({ nombre: this.player.nombre, score: this.score });
+        } else if (this.score > existingScore.score) {
+          existingScore.score = this.score;
         }
+
+        scores.sort((a, b) => b.score - a.score);
+
+        localStorage.setItem("scores", JSON.stringify(scores));
       } catch (error) {
         console.error("Error al guardar los puntajes:", error);
       }
@@ -525,11 +477,11 @@ class MainScene extends Phaser.Scene {
       this.player.setVelocityX(-160);
       this.player.anims.play("leftR", true);
       if (this.shootKey.isDown) this.player.shoot("left");
-      if (this.cursors.shift.isDown) this.player.run("left");
+      if (this.cursors.shift.isDown) this.player.dash("left");
     } else if (this.cursors.right.isDown) {
       this.player.setVelocityX(160);
       this.player.anims.play("rightR", true);
-      if (this.cursors.shift.isDown) this.player.run("right");
+      if (this.cursors.shift.isDown) this.player.dash("right");
       if (this.shootKey.isDown) this.player.shoot("right");
     } else {
       this.player.setVelocityX(0);
@@ -547,13 +499,13 @@ class MainScene extends Phaser.Scene {
         this.player.setVelocityY(-330);
       }
 
-      this.updateBackgroundPosition();
+      //this.updateBackgroundPosition();
 
-      this.enemies.children.iterate((enemy) => {
-        if (enemy) {
-          enemy.move();
-        }
-      });
+      // this.enemies.children.iterate((enemy) => {
+      //   if (enemy) {
+      //     enemy.move();
+      //   }
+      // });
     }
   }
   updateBackgroundPosition() {
@@ -575,6 +527,18 @@ class Scene2 extends Phaser.Scene {
     super({key: "Scene2"});
   }
 
+  hitBullet(bullet, enemy) {
+    enemy.destroy();
+    bullet.destroy();
+
+    if (typeof this.score === "number") {
+      this.score += 10;
+      if (this.scoreText) {
+        this.scoreText.setText("Score: " + this.score);
+      }
+    }
+  }
+
   init(data) {
     this.gameOver = false;
     if (data.reset) {
@@ -583,13 +547,21 @@ class Scene2 extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image("sky", "assets/sky.png");
+    this.load.image("sky", "assets/sky.gif");
     this.load.image("ground", "assets/platform.png");
     this.load.image("star", "assets/star.png");
     this.load.image("bomb", "assets/bomb.png");
-    this.load.spritesheet("dude", "assets/dude.png", {
-      frameWidth: 32,
-      frameHeight: 48,
+    this.load.spritesheet("rick", "assets/rick.png", {
+      frameWidth: 40,
+      frameHeight: 50,
+    });
+    this.load.spritesheet("morty", "assets/morty.png", {
+      frameWidth: 40,
+      frameHeight: 50,
+    });
+    this.load.spritesheet("boss", "assets/boss.png", {
+      frameWidth: 40,
+      frameHeight: 50,
     });
   }
 
@@ -600,43 +572,87 @@ class Scene2 extends Phaser.Scene {
     .setScale(width / 800, height / 600)
     .setScrollFactor(0);
 
+    //Limites de mundo
     this.physics.world.setBounds(0, 0, width * 2, height);
 
-    this.player = new Player(this, width/2, 450, "dude");
+    //---------------------------JUGADOR---------------------------------
+    this.player = new Player(this, width / 2, 450, "rick", "Luis", 0);
+
+    //Camara
     this.cameras.main.setBounds(0, 0, width * 3, height);
     this.cameras.main.startFollow(this.player, false, 1, 1, -width / 2, 0);
 
     //this.cameras.main.setDeadzone(0, 0);
     //this.cameras.main.centerToBounds();
-
+    //-----------------------------------ANIMACIONES----------------------------------
     this.anims.create({
-      key: "left",
-      frames: this.anims.generateFrameNumbers("dude", { start: 0, end: 3 }),
+      key: "leftR",
+      frames: this.anims.generateFrameNumbers("rick", { start: 0, end: 3 }),
       frameRate: 10,
       repeat: -1,
     });
     
     this.anims.create({
       key: "turn",
-      frames: [{ key: "dude", frame: 4 }],
+      frames: [{ key: "rick", frame: 4 }],
       frameRate: 20,
     });
     
     this.anims.create({
-      key: "right",
-      frames: this.anims.generateFrameNumbers("dude", { start: 5, end: 8 }),
+      key: "rightR",
+      frames: this.anims.generateFrameNumbers("rick", { start: 5, end: 8 }),
       frameRate: 10,
       repeat: -1,
     });
-    
-    this.cursors = this.input.keyboard.createCursorKeys();
 
+    this.anims.create({
+      key: "leftM",
+      frames: this.anims.generateFrameNumbers("morty", { start: 0, end: 3 }),
+      frameRate: 10,
+      repeat: -1,
+    });
+
+    this.anims.create({
+      key: "rightM",
+      frames: this.anims.generateFrameNumbers("morty", { start: 5, end: 8 }),
+      frameRate: 10,
+      repeat: -1,
+    });
+
+    //Enemigos
+    this.enemies = this.physics.add.group();
+
+    //Creación enemigos
+    for (let i = 0; i < 12; i++) {
+      let x = 12 + i * 70;
+      let enemy = new Enemy(this, x, 0, "morty"); // Crear instancia de Enemy
+      this.enemies.add(enemy); // Agregar manualmente al grupo
+    }
+
+    this.enemies.getChildren().forEach((enemy) => {
+      console.log(enemy.texture.key); // Verifica el key de la textura
+    });
+
+    this.enemies.children.iterate((enemy) => {
+      if (enemy) {
+        enemy.setCollideWorldBounds(true);
+        enemy.setVelocityX(Phaser.Math.Between(-200, 200));
+      }
+    });
+    
+    //Keybinds
+    this.cursors = this.input.keyboard.createCursorKeys();
+    this.shootKey = this.input.keyboard.addKey(
+      Phaser.Input.Keyboard.KeyCodes.X
+    );
+
+    //Plataformas
     this.platforms = this.physics.add.staticGroup();
 
     // Suelo
     this.platforms.create(0, 568, "ground").setOrigin(0,0).setScale((width * 2) / 400, 2).refreshBody();
 
-    // Plataformas
+    // Plataformas flotantes
     this.platforms.create(width * 2 * 0.2, height * 0.7, "ground").setScale(1.2, 1).refreshBody();
     this.platforms.create(width * 2 * 0.3, height * 0.3, "ground").setScale(0.8, 1).refreshBody();
     this.platforms.create(width * 2 * 0.45, height * 0.55, "ground").setScale(1.3, 1).refreshBody();
@@ -646,6 +662,11 @@ class Scene2 extends Phaser.Scene {
 
     // Colision
     this.physics.add.collider(this.player, this.platforms);
+    this.physics.add.collider(this.enemies, this.platforms);
+    this.physics.add.collider(this.player, this.enemies, (player, enemy) => {
+      this.gameOver = true;
+      //this.scene.start("FinalBossScene", { score: this.score });
+    });
   }
 
   update() {
@@ -676,21 +697,46 @@ class Scene2 extends Phaser.Scene {
       });
     }
 
+    if(this.nextStage) {
+      return this.scene.start("FinalBossScene", {
+        score: this.score,
+        player: this.player,
+      });
+    }
+
     if (this.cursors.left.isDown) {
       this.player.setVelocityX(-160);
-      this.player.anims.play("left", true);
+      this.player.anims.play("leftR", true);
+      if (this.shootKey.isDown) this.player.shoot("left");
       if (this.cursors.shift.isDown) this.player.dash("left");
     } else if (this.cursors.right.isDown) {
       this.player.setVelocityX(160);
-      this.player.anims.play("right", true);
+      this.player.anims.play("rightR", true);
       if (this.cursors.shift.isDown) this.player.dash("right");
+      if (this.shootKey.isDown) this.player.shoot("right");
     } else {
       this.player.setVelocityX(0);
       this.player.anims.play("turn");
     }
 
-    if (this.cursors.up.isDown && this.player.body.touching.down) {
-      this.player.setVelocityY(-330);
+    if (
+      this.cursors.up.isDown &&
+      (this.player.body.touching.down || this.player.body.blocked.down)
+    ) {
+      if (
+        this.cursors.up.isDown &&
+        (this.player.body.touching.down || this.player.body.blocked.down)
+      ) {
+        this.player.setVelocityY(-330);
+      }
+
+      //this.updateBackgroundPosition();
+
+      // this.enemies.children.iterate((enemy) => {
+      //   if (enemy) {
+      //     enemy.move();
+      //   }
+      // });
     }
   }
 }
@@ -781,6 +827,77 @@ class FinalBossScene extends Phaser.Scene {
   create() {
     this.boss = new FinalBoss(this, 100, 450, "boss");
   }
+
+  update() {
+    if (this.gameOver) {
+      try {
+        let scores = JSON.parse(localStorage.getItem("scores")) || [];
+
+        const existingScore = scores.find(
+          (entry) => entry.nombre === this.player.nombre
+        );
+
+        if (!existingScore) {
+          scores.push({ nombre: this.player.nombre, score: this.score });
+        } else if (this.score > existingScore.score) {
+          existingScore.score = this.score;
+        }
+
+        scores.sort((a, b) => b.score - a.score);
+
+        localStorage.setItem("scores", JSON.stringify(scores));
+      } catch (error) {
+        console.error("Error al guardar los puntajes:", error);
+      }
+      console.log("Cambiando a GameOverScene");
+      return this.scene.start("GameOverScene", {
+        score: this.score,
+        player: this.player,
+      });
+    }
+
+    if(this.nextStage) {
+      return this.scene.start("FinalBossScene", {
+        score: this.score,
+        player: this.player,
+      });
+    }
+
+    if (this.cursors.left.isDown) {
+      this.player.setVelocityX(-160);
+      this.player.anims.play("leftR", true);
+      if (this.shootKey.isDown) this.player.shoot("left");
+      if (this.cursors.shift.isDown) this.player.run("left");
+    } else if (this.cursors.right.isDown) {
+      this.player.setVelocityX(160);
+      this.player.anims.play("rightR", true);
+      if (this.cursors.shift.isDown) this.player.run("right");
+      if (this.shootKey.isDown) this.player.shoot("right");
+    } else {
+      this.player.setVelocityX(0);
+      this.player.anims.play("turn");
+    }
+
+    if (
+      this.cursors.up.isDown &&
+      (this.player.body.touching.down || this.player.body.blocked.down)
+    ) {
+      if (
+        this.cursors.up.isDown &&
+        (this.player.body.touching.down || this.player.body.blocked.down)
+      ) {
+        this.player.setVelocityY(-330);
+      }
+
+      //this.updateBackgroundPosition();
+
+      this.enemies.children.iterate((enemy) => {
+        if (enemy) {
+          enemy.move();
+        }
+      });
+    }
+  }
 }
 
 class GameOverScene extends Phaser.Scene {
@@ -831,7 +948,8 @@ const config = {
       debug: true,
     },
   },
-  scene: [MainScene, Scene2, GameOverScene, FinalBossScene],
+  scene: [Scene2]
+  //scene: [MainScene, Scene2, GameOverScene, FinalBossScene],
 };
 
 const game = new Phaser.Game(config);
