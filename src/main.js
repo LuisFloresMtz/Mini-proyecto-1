@@ -31,7 +31,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     this.scene.score += 100;
     this.scene.scoreText.setText("Score: " + this.scene.score);
     this.scene.timerText.destroy();
-    if(this.scene.score >= 10) this.scene.nextStage = true;
+    if(this.scene.score >= 500) this.scene.nextStage = true;
   }
 
   collectStar(star) {
@@ -39,7 +39,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     this.scene.score += 10;
     this.scene.scoreText.setText("Score: " + this.scene.score);
     this.itemCounter++;
-    if(this.scene.score >= 10) this.scene.nextStage = true;
+    if(this.scene.score >= 500) this.scene.nextStage = true;
     //Aparicion del item especial una vez agarró 10 items normales
     if(this.itemCounter == 10) {
       this.itemCounter = 0;
@@ -72,7 +72,6 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     if (this.scene.stars.countActive(true) === 0) {
       this.scene.stars.children.iterate((child) => {
         child.enableBody(true, Phaser.Math.Between(0, width), 0, true, true);
-        console.log(width);
         child.setBounce(1);
         child.setCollideWorldBounds(true);
         child.setVelocity(Phaser.Math.Between(-200, 200), 40);
@@ -170,6 +169,8 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
 
     scene.add.existing(this);
     scene.physics.add.existing(this);
+
+    this.scene.score = 0;
 
     this.setBounce(0.2);
     this.setCollideWorldBounds(true);
@@ -319,16 +320,6 @@ class MainScene extends Phaser.Scene {
       fontSize: "32px",
       fill: "#FFFF",
     });
-
-    this.physics.add.collider(this.player, this.platforms);
-
-    this.physics.add.collider(
-      this.player.bullets,
-      this.enemies,
-      (bullet, enemy) => {
-        this.hitBullet(bullet, enemy);
-      }
-    );
 
     //-----------------------------------ANIMACIONES----------------------------------
     this.anims.create({
@@ -525,6 +516,7 @@ class MainScene extends Phaser.Scene {
 class Scene2 extends Phaser.Scene {
   constructor() {
     super({key: "Scene2"});
+    this.levelWidth = width * 2;
   }
 
   hitBullet(bullet, enemy) {
@@ -551,6 +543,7 @@ class Scene2 extends Phaser.Scene {
     this.load.image("ground", "assets/platform.png");
     this.load.image("star", "assets/star.png");
     this.load.image("bomb", "assets/bomb.png");
+    this.load.image("bullet", "assets/bullet.png");
     this.load.spritesheet("rick", "assets/rick.png", {
       frameWidth: 40,
       frameHeight: 50,
@@ -566,24 +559,48 @@ class Scene2 extends Phaser.Scene {
   }
 
   create() {
+    //--------------------------------FONDO------------------------------
     this.add
     .image(0, 0, "sky")
     .setOrigin(0, 0)
-    .setScale(width / 800, height / 600)
-    .setScrollFactor(0);
+    .setScale(this.levelWidth / 800, height / 342);
+    //.setScrollFactor(0);
 
     //Limites de mundo
-    this.physics.world.setBounds(0, 0, width * 2, height);
+    this.physics.world.setBounds(0, 0, this.levelWidth, height);
 
-    //---------------------------JUGADOR---------------------------------
+    
+    //--------------------------------JUGADOR---------------------------------
     this.player = new Player(this, width / 2, 450, "rick", "Luis", 0);
 
-    //Camara
-    this.cameras.main.setBounds(0, 0, width * 3, height);
-    this.cameras.main.startFollow(this.player, false, 1, 1, -width / 2, 0);
+    //------------------------------CAMARA--------------------------------------
+    this.cameras.main.setBounds(0, 0, this.levelWidth, height);
+    this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
 
     //this.cameras.main.setDeadzone(0, 0);
     //this.cameras.main.centerToBounds();
+    
+    //-------------------------------------ENEMIGOS---------------------------
+    this.enemies = this.physics.add.group();
+    
+    //Creación enemigos
+    for (let i = 0; i < 6; i++) {
+      let x = 12 + i * 70;
+      let enemy = new Enemy(this, x, 0, "morty"); // Crear instancia de Enemy
+      this.enemies.add(enemy); // Agregar manualmente al grupo
+    }
+
+    this.enemies.getChildren().forEach((enemy) => {
+      console.log(enemy.texture.key); // Verifica el key de la textura
+    });
+
+    this.enemies.children.iterate((enemy) => {
+      if (enemy) {
+        enemy.setCollideWorldBounds(true);
+        enemy.setVelocityX(Phaser.Math.Between(-200, 200));
+      }
+    });
+    
     //-----------------------------------ANIMACIONES----------------------------------
     this.anims.create({
       key: "leftR",
@@ -618,35 +635,20 @@ class Scene2 extends Phaser.Scene {
       frameRate: 10,
       repeat: -1,
     });
-
-    //Enemigos
-    this.enemies = this.physics.add.group();
-
-    //Creación enemigos
-    for (let i = 0; i < 12; i++) {
-      let x = 12 + i * 70;
-      let enemy = new Enemy(this, x, 0, "morty"); // Crear instancia de Enemy
-      this.enemies.add(enemy); // Agregar manualmente al grupo
-    }
-
-    this.enemies.getChildren().forEach((enemy) => {
-      console.log(enemy.texture.key); // Verifica el key de la textura
-    });
-
-    this.enemies.children.iterate((enemy) => {
-      if (enemy) {
-        enemy.setCollideWorldBounds(true);
-        enemy.setVelocityX(Phaser.Math.Between(-200, 200));
-      }
-    });
     
-    //Keybinds
+    //----------------------------KEYBINDS-------------------------------
     this.cursors = this.input.keyboard.createCursorKeys();
     this.shootKey = this.input.keyboard.addKey(
       Phaser.Input.Keyboard.KeyCodes.X
     );
 
-    //Plataformas
+    //--------------------------PUNTUACIÓN-----------------------------------
+    this.scoreText = this.add.text(16, 16, "Score: 0", {
+      fontSize: "32px",
+      fill: "#FFFF",
+    }).setScrollFactor(0);
+
+    //-------------------------------PLATAFORMAS--------------------------------
     this.platforms = this.physics.add.staticGroup();
 
     // Suelo
@@ -660,20 +662,27 @@ class Scene2 extends Phaser.Scene {
     this.platforms.create(width * 2 * 0.65, height * 0.7, "ground").setScale(0.6, 1).refreshBody();
     this.platforms.create(width * 2 * 0.8, height * 0.55, "ground").setScale(1.2, 1).refreshBody();
 
-    // Colision
+    // ---------------------------------------FISICAS--------------------------------------------
     this.physics.add.collider(this.player, this.platforms);
     this.physics.add.collider(this.enemies, this.platforms);
     this.physics.add.collider(this.player, this.enemies, (player, enemy) => {
       this.gameOver = true;
       //this.scene.start("FinalBossScene", { score: this.score });
     });
+    this.physics.add.collider(
+      this.player.bullets,
+      this.enemies,
+      (bullet, enemy) => {
+        this.hitBullet(bullet, enemy);
+      }
+    );
   }
 
   update() {
     if (this.gameOver) {
       try {
         let scores = JSON.parse(localStorage.getItem("scores")) || [];
-
+        
         const existingScore = scores.find(
           (entry) => entry.nombre === this.player.nombre
         );
@@ -683,9 +692,9 @@ class Scene2 extends Phaser.Scene {
         } else if (this.score > existingScore.score) {
           existingScore.score = this.score;
         }
-
+        
         scores.sort((a, b) => b.score - a.score);
-
+        
         localStorage.setItem("scores", JSON.stringify(scores));
       } catch (error) {
         console.error("Error al guardar los puntajes:", error);
@@ -696,14 +705,14 @@ class Scene2 extends Phaser.Scene {
         player: this.player,
       });
     }
-
+    
     if(this.nextStage) {
       return this.scene.start("FinalBossScene", {
         score: this.score,
         player: this.player,
       });
     }
-
+    
     if (this.cursors.left.isDown) {
       this.player.setVelocityX(-160);
       this.player.anims.play("leftR", true);
@@ -718,7 +727,7 @@ class Scene2 extends Phaser.Scene {
       this.player.setVelocityX(0);
       this.player.anims.play("turn");
     }
-
+    
     if (
       this.cursors.up.isDown &&
       (this.player.body.touching.down || this.player.body.blocked.down)
@@ -729,14 +738,19 @@ class Scene2 extends Phaser.Scene {
       ) {
         this.player.setVelocityY(-330);
       }
-
+      
       //this.updateBackgroundPosition();
+      //Falta rreglar esto
+      try {
 
-      // this.enemies.children.iterate((enemy) => {
-      //   if (enemy) {
-      //     enemy.move();
-      //   }
-      // });
+      this.enemies.children.iterate((enemy) => {
+        if (enemy) {
+          enemy.move();
+        }
+      });
+    } catch(error){
+      console.log(error);
+    }
     }
   }
 }
@@ -948,8 +962,8 @@ const config = {
       debug: true,
     },
   },
-  scene: [Scene2]
-  //scene: [MainScene, Scene2, GameOverScene, FinalBossScene],
+  //scene: [Scene2]
+  scene: [MainScene, Scene2, GameOverScene, FinalBossScene],
 };
 
 const game = new Phaser.Game(config);
