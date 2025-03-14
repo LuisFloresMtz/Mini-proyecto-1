@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Selecciona tu Personaje - Mi Videojuego</title>
+  <!-- Fuente retro -->
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <!-- SweetAlert2 para alertas personalizadas -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- GSAP -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.1/gsap.min.js"></script>
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/personaje.css">
+  <!-- JS -->
+  <script src="js/personaje.js" defer></script>
+</head>
+<body>
+  <div id="selection-container" class="screen">
+    <!-- Opcional: canvas de fondo animado (puedes agregarlo si deseas) -->
+    <!-- Encabezado -->
+    <header id="selection-header">
+      <h1>Selecciona tu Personaje</h1>
+      <p>Arrastra el personaje que desees a la zona de selección.</p>
+    </header>
+
+    <!-- Contenedor principal: dos secciones, una para los personajes y otra para la zona de selección -->
+    <div id="selection-content">
+      <!-- Contenedor de personajes disponibles -->
+      <div id="characters-container">
+        <img src="img/rick.png" alt="Rick" class="character draggable" data-character="rick">
+        <img src="img/morty.png" alt="Morty" class="character draggable" data-character="morty">
+      </div>
+      <!-- Zona de selección (drop zone) -->
+      <div id="dropzone">
+        <p id="dropzone-text">Tu Personaje</p>
+      </div>
+    </div>
+
+    <!-- Botón para iniciar juego -->
+    <button id="start-btn">Iniciar Juego</button>
+  </div>
+</body>
+</html>

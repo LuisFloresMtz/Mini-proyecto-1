@@ -151,30 +151,16 @@ document.addEventListener("DOMContentLoaded", () => {
   
     function executeMenuAction(action) {
       if (action === "jugar") {
-        window.location.href = "juego.html";
-      } else {
-        console.log("Acción ejecutada: " + action);
+        window.location.href = "alias.html";
       }
-
       if (action === "records") {
         window.location.href = "records.html";
       }
-      else {
-        console.log("Acción ejecutada: " + action);
-      }
-
-      if(action === "instrucciones") {
+      if (action === "instrucciones") {
         window.location.href = "instrucciones.html";
       }
-      else{
-        console.log("Acción ejecutada: " + action);
-      }
-
-      if(action === "creditos") {
+      if (action === "creditos") {
         window.location.href = "creditos.html";
-      }
-      else{
-        console.log("Acción ejecutada: " + action);
       }
     }
   

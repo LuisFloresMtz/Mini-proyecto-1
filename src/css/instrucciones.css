@@ -1,0 +1,109 @@
+/* Fuente retro */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Press Start 2P', sans-serif;
+  }
+  
+  /* Colores de la paleta:
+     - Fondo Principal: #2a0134
+     - Fondos Secundarios: #1b0e2e
+     - Texto Principal: #ffdd33
+     - Texto Destacado: #ff8c00
+     - Bordes/Detalles: #ff6700
+     - Detalles de Luz: #6c1390
+     - Animaciones y Partículas: #33ff66
+     - Botones Hover: #00ccff
+     - Sombra/Fondo Oscuro: #000000
+  */
+  
+  /* Layout base: cada sección con altura 100vh (panel) */
+  .panel {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px;
+    position: relative;
+  }
+  
+  /* Secciones: la primera (.purple) y la última (.black) se mantienen intactas */
+  /* Primera sección: Fondo Principal */
+  .purple {
+    background: #2a0134;
+    color: #ffdd33;
+  }
+  
+  /* Secciones intermedias: usar Fondo Secundario */
+  .red, 
+  .orange, 
+  .green, 
+  .pink, 
+  .purple2 {
+    background: #1b0e2e;
+    color: #ffdd33;
+  }
+  
+  /* Última sección: fondo oscuro */
+  .black {
+    background: #000000;
+    color: #ffdd33;
+  }
+  
+  /* Contenido dentro de cada panel */
+  .panel-content {
+    max-width: 700px;
+    margin: 0 auto;
+  }
+  
+  /* Líneas animadas (Bordes/Detalles) */
+  .line {
+    display: block;
+    width: 80%;
+    height: 6px;
+    margin: 20px auto 0;
+    background-color: #ff6700;
+    transform-origin: left center;
+  }
+  
+  /* Menú fijo */
+  nav {
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.7);
+    padding: 8px 12px;
+    border-radius: 10px;
+    z-index: 999;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+  }
+  nav a {
+    color: #ffdd33;
+    text-decoration: none;
+    margin: 0 8px;
+    opacity: 0.7;
+  }
+  nav a:hover,
+  nav a.active {
+    opacity: 1;
+    color: #00ccff;
+    text-decoration: underline;
+  }
+  
+  /* Ajustes responsivos */
+  @media (max-width: 600px) {
+    .panel-content {
+      padding: 0 10px;
+    }
+    nav {
+      font-size: 12px;
+      right: 5px;
+    }
+  }
