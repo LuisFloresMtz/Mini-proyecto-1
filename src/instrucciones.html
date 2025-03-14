@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Instrucciones Avanzadas - Mi Videojuego</title>
+  <!-- Fuente retro -->
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Hoja de estilos -->
+  <link rel="stylesheet" href="css/instrucciones.css">
+  <!-- GSAP -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.1/gsap.min.js"></script>
+  <!-- ScrollTrigger & ScrollToPlugin -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.1/ScrollTrigger.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.1/ScrollToPlugin.min.js"></script>
+  <!-- Script JS -->
+  <script src="js/instrucciones.js" defer></script>
+</head>
+<body>
+  <!-- Menú de navegación fijo -->
+  <nav>
+    <a href="#intro"><i class="fa-solid fa-gamepad"></i> Introducción</a>
+    <a href="#flecha-izq"><i class="fa-solid fa-arrow-left"></i> Izquierda</a>
+    <a href="#flecha-der"><i class="fa-solid fa-arrow-right"></i> Derecha</a>
+    <a href="#flecha-up"><i class="fa-solid fa-arrow-up"></i> Arriba</a>
+    <a href="#shift-x"><i class="fa-solid fa-running"></i> SHIFT & X</a>
+    <a href="#dinamica"><i class="fa-solid fa-cogs"></i> Dinámica</a>
+  </nav>
+
+  <!-- Sección 1: Intro -->
+  <section id="intro" class="panel purple">
+    <div class="panel-content">
+      <h1><i class="fa-solid fa-gamepad"></i> Instrucciones - Laboratorio Mutante</h1>
+      <p class="desc">
+        Aquí aprenderás a dominar los controles y las dinámicas de cada nivel.  
+        Desplázate para descubrir cada comando y su funcionamiento, o usa el menú superior para saltar a una sección.
+      </p>
+      <!-- Línea animada -->
+      <span class="line line-1"></span>
+    </div>
+  </section>
+
+  <!-- Sección 2: Flecha Izquierda -->
+  <section id="flecha-izq" class="panel red">
+    <div class="panel-content">
+      <h2><i class="fa-solid fa-arrow-left"></i> Flecha Izquierda</h2>
+      <p>
+        Mueve al jugador a la izquierda.  
+        Mantén presionada <em>SHIFT</em> para correr a la izquierda.  
+        Presiona <em>X</em> mientras te mueves para disparar en esa dirección.
+      </p>
+      <span class="line line-2"></span>
+    </div>
+  </section>
+
+  <!-- Sección 3: Flecha Derecha -->
+  <section id="flecha-der" class="panel orange">
+    <div class="panel-content">
+      <h2><i class="fa-solid fa-arrow-right"></i> Flecha Derecha</h2>
+      <p>
+        Mueve al jugador a la derecha.  
+        Mantén presionada <em>SHIFT</em> para correr a la derecha.  
+        Presiona <em>X</em> mientras te mueves para disparar en esa dirección.
+      </p>
+      <span class="line line-3"></span>
+    </div>
+  </section>
+
+  <!-- Sección 4: Flecha Arriba -->
+  <section id="flecha-up" class="panel green">
+    <div class="panel-content">
+      <h2><i class="fa-solid fa-arrow-up"></i> Flecha Arriba</h2>
+      <p>
+        Permite saltar cuando el jugador se encuentra en el suelo.  
+        Úsala en combinación con las otras flechas para saltar obstáculos o enemigos.
+      </p>
+      <span class="line line-4"></span>
+    </div>
+  </section>
+
+  <!-- Sección 5: SHIFT & X -->
+  <section id="shift-x" class="panel pink">
+    <div class="panel-content">
+      <h2><i class="fa-solid fa-running"></i> SHIFT & <i class="fa-solid fa-crosshairs"></i> Tecla X</h2>
+      <p>
+        <strong>SHIFT:</strong> Presionado junto a una flecha hace que el jugador corra en esa dirección.
+        <br><br>
+        <strong>X:</strong> Dispara un proyectil según la última dirección de movimiento.
+      </p>
+      <span class="line line-5"></span>
+    </div>
+  </section>
+
+<!-- Sección 6: Dinámica del Juego -->
+<section id="dinamica" class="panel purple2">
+    <div class="panel-content">
+      <h2><i class="fa-solid fa-cogs"></i> Dinámica del Juego</h2>
+      <p>
+        En esta sección se detalla la progresión de niveles, los objetivos, las mecánicas especiales y la gestión de vidas:
+      </p>
+      <ul>
+        <li>
+          <strong>Nivel 1:</strong><br><br>
+          Recoge consumibles para conseguir puntos y esquiva las bombas.<br><br>
+          Cada ciertos puntos aparecerá un objeto especial que otorga más puntos; tendrás <strong>5 segundos</strong> para recogerlo.<br><br>
+          Al alcanzar 500 puntos, pasarás al siguiente nivel. <br><br>
+          Inicias con <strong>3 vidas</strong> <i class="fa-solid fa-heart"></i> <i class="fa-solid fa-heart"></i> <i class="fa-solid fa-heart"></i>, las cuales se reducen al sufrir impactos.
+        </li>
+        <br>
+        <li>
+          <strong>Nivel 2:</strong><br><br>
+          Mata enemigos para conseguir puntos y recoge ítems para aumentar tu puntuación.<br><br>
+          Al llegar a 500 puntos, se activará el enfrentamiento con el jefe.<br><br>
+        </li>
+        <br>
+        <li>
+          <strong>Nivel 3:</strong><br><br>
+          Enfrenta la intensa Boss Fight contra el jefe final.<br><br>
+          Pon a prueba todas tus habilidades y procura conservar al menos <strong>1 vida</strong> <i class="fa-solid fa-heart"></i> de las <strong>3</strong> iniciales para lograr la victoria.
+        </li>
+      </ul>
+      <span class="line line-6"></span>
+    </div>
+  </section>
+
+  <!-- Sección final -->
+  <section id="final" class="panel black">
+    <div class="panel-content">
+      <h2><i class="fa-solid fa-flag-checkered"></i> ¡Listo para jugar!</h2>
+      <p>Ya conoces todos los comandos y la dinámica de cada nivel. ¡A divertirse!</p>
+    </div>
+  </section>
+</body>
+</html>

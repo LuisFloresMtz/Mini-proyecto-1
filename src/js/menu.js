@@ -151,7 +151,7 @@ document.addEventListener("DOMContentLoaded", () => {
   
     function executeMenuAction(action) {
       if (action === "jugar") {
-        window.location.href = "juego.html";
+        window.location.href = "alias.html";
       }
       if (action === "records") {
         window.location.href = "records.html";
