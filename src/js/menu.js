@@ -152,8 +152,15 @@ document.addEventListener("DOMContentLoaded", () => {
     function executeMenuAction(action) {
       if (action === "jugar") {
         window.location.href = "juego.html";
-      } else {
-        console.log("Acción ejecutada: " + action);
+      }
+      if (action === "records") {
+        window.location.href = "records.html";
+      }
+      if (action === "instrucciones") {
+        window.location.href = "instrucciones.html";
+      }
+      if (action === "creditos") {
+        window.location.href = "creditos.html";
       }
     }
   
