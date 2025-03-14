@@ -499,8 +499,8 @@ const config = {
       debug: true,
     },
   },
-  //scene: [MainScene, GameOverScene, Scene2],
-  scene: [Scene2, GameOverScene, MainScene],
+  scene: [MainScene, GameOverScene, Scene2],
+  //scene: [Scene2, GameOverScene, MainScene],
 };
 
 const game = new Phaser.Game(config);
