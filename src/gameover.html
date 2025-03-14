@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Game Over - Mi Videojuego</title>
+  <!-- Fuente retro -->
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <!-- GSAP -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.1/gsap.min.js"></script>
+  <!-- Lottie Player -->
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+  <!-- Hoja de estilos -->
+  <link rel="stylesheet" href="css/gameover.css">
+  <!-- Lógica JS -->
+  <script src="js/gameover.js" defer></script>
+</head>
+<body>
+  <div id="gameover-container" class="screen fullscreen">
+    <!-- Canvas para fondo animado -->
+    <canvas id="gameover-canvas"></canvas>
+
+    <!-- Contenedor central del mensaje -->
+    <div id="gameover-content">
+      <h1>GAME OVER</h1>
+      <p id="score-display">Tu Puntaje: 0</p>
+      <p>Lo siento, has perdido la partida.</p>
+      <!-- Animación Lottie tematica (por ejemplo, un cráneo o monstruo) -->
+      <div id="gameover-lottie">
+        <lottie-player
+          src="https://lottie.host/54711672-d4bc-4079-9b91-995c0de02e17/zHev7jnggt.json"
+          background="transparent"
+          speed="1"
+          style="width: 200px; height: 200px;"
+          loop
+          autoplay>
+        </lottie-player>
+      </div>
+      <button id="return-menu-btn">Regresar al Menú Principal</button>
+    </div>
+  </div>
+</body>
+</html>
