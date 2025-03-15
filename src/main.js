@@ -40,7 +40,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     this.scene.score += 10;
     this.scene.scoreText.setText("Score: " + this.scene.score);
     this.itemCounter++;
-    if (this.scene.score >= 100) this.scene.nextStage = true;
+    if (this.scene.score >= 20) this.scene.nextStage = true;
     //Aparicion del item especial una vez agarró 10 items normales
     if (this.itemCounter == 10) {
       this.itemCounter = 0;
@@ -555,29 +555,53 @@ class MainScene extends Phaser.Scene {
 
     if (this.gameOver) {
       try {
-        let scores = JSON.parse(localStorage.getItem("scores")) || [];
+        // Recuperar el jugador actual de localStorage (en caso de que this.player.nombre esté nulo)
+        let storedPlayer = localStorage.getItem("selectedPlayer");
+        storedPlayer = storedPlayer ? JSON.parse(storedPlayer) : {};
 
-        const existingScore = scores.find(
-          (entry) => entry.nombre === this.player.nombre
-        );
+        const alias = storedPlayer.alias;
+        const now = new Date().toLocaleDateString();
 
-        if (!existingScore) {
-          scores.push({ nombre: this.player.nombre, score: this.score });
-        } else if (this.score > existingScore.score) {
-          existingScore.score = this.score;
+        // Actualizar el objeto del jugador actual (clave "selectedPlayer")
+        let selectedPlayer = localStorage.getItem("selectedPlayer");
+        selectedPlayer = selectedPlayer
+          ? JSON.parse(selectedPlayer)
+          : { alias, score: 0, date: "" };
+
+        if (this.score > selectedPlayer.score) {
+          selectedPlayer.score = this.score;
+          selectedPlayer.date = now;
+          localStorage.setItem(
+            "selectedPlayer",
+            JSON.stringify(selectedPlayer)
+          );
         }
 
-        scores.sort((a, b) => b.score - a.score);
+        // Actualizar el arreglo global de registros ("records")
+        let records = localStorage.getItem("records");
+        records = records ? JSON.parse(records) : [];
 
-        localStorage.setItem("scores", JSON.stringify(scores));
+        const index = records.findIndex((rec) => rec.alias === alias);
+        if (index === -1) {
+          // Si no existe, agregarlo
+          records.push({ alias, score: this.score, date: now });
+        } else {
+          // Si existe, actualizar solo si el puntaje es mayor
+          if (this.score > records[index].score) {
+            records[index].score = this.score;
+            records[index].date = now;
+          }
+        }
+        localStorage.setItem("records", JSON.stringify(records));
       } catch (error) {
-        console.error("Error al guardar los puntajes:", error);
+        console.error("Error al actualizar registros:", error);
       }
       console.log("Cambiando a GameOverScene");
-      return this.scene.start("GameOverScene", {
-        score: this.score,
-        player: this.player,
-      });
+      window.location.href = "gameover.html";
+      // return this.scene.start("GameOverScene", {
+      //   score: this.score,
+      //   player: this.player,
+      // });
     }
 
     if (Phaser.Input.Keyboard.JustDown(this.pauseKey)) {
@@ -587,7 +611,6 @@ class MainScene extends Phaser.Scene {
 
     if (this.nextStage) {
       this.level1Music.stop();
-
       return this.scene.start("Scene2", {
         score: this.score,
         player: this.player,
@@ -596,14 +619,6 @@ class MainScene extends Phaser.Scene {
     }
 
     playerMovement(this.player, this.cursors, this.shootKey, "rick");
-
-    //this.updateBackgroundPosition();
-
-    // this.enemies.children.iterate((enemy) => {
-    //   if (enemy) {
-    //     enemy.move();
-    //   }
-    // });
   }
 
   drawHearts(count) {
@@ -646,7 +661,6 @@ class Scene2 extends Phaser.Scene {
   constructor() {
     super({ key: "Scene2" });
     this.levelWidth = width * 2;
-    this.pause = false;
   }
 
   hitBullet(bullet, enemy) {
@@ -663,11 +677,9 @@ class Scene2 extends Phaser.Scene {
   }
   init(data) {
     this.gameOver = false;
-    // if (data.reset) {
-    //   this.score = 0;
-    // }
     this.score = data.score;
     this.lifes = data.lifes;
+    console.log(data);
   }
 
   preload() {
@@ -676,7 +688,7 @@ class Scene2 extends Phaser.Scene {
     this.load.image("ground", "assets/platform.jpg");
     this.load.image("star", "assets/star.png");
     this.load.image("bullet", "assets/bullet.png");
-    this.load.spritesheet("enemy", "assets/enemigo.png", {
+    this.load.spritesheet("morty", "assets/morty.png", {
       frameWidth: 40,
       frameHeight: 50,
     });
@@ -707,6 +719,7 @@ class Scene2 extends Phaser.Scene {
 
     //--------------------------------JUGADOR---------------------------------
     this.player = new Player(this, width / 2, height / 2, "rick", "Yo", 0);
+    this.player.lifes = this.lifes;
 
     //------------------------------CAMARA--------------------------------------
     this.cameras.main.setBounds(0, 0, this.levelWidth, height);
@@ -740,6 +753,7 @@ class Scene2 extends Phaser.Scene {
 
     //-----------------------------------ANIMACIONES----------------------------------
     createAnimations("rick", this);
+    createAnimations("enemy", this);
 
     //----------------------------KEYBINDS-------------------------------
     this.cursors = this.input.keyboard.createCursorKeys();
@@ -752,6 +766,7 @@ class Scene2 extends Phaser.Scene {
     );
 
     //--------------------------PUNTUACIÓN-----------------------------------
+    console.log("score: " + this.score);
     this.scoreText = this.add
       .text(16, 16, "Score: " + this.score, {
         fontSize: "32px",
@@ -866,10 +881,11 @@ class Scene2 extends Phaser.Scene {
         console.error("Error al actualizar registros:", error);
       }
       console.log("Cambiando a GameOverScene");
-      return this.scene.start("GameOverScene", {
-        score: this.score,
-        player: this.player,
-      });
+      window.location.href = "gameover.html";
+      // return this.scene.start("GameOverScene", {
+      //   score: this.score,
+      //   player: this.player,
+      // });
     }
 
     if (Phaser.Input.Keyboard.JustDown(this.pauseKey)) {
@@ -890,19 +906,15 @@ class Scene2 extends Phaser.Scene {
         return this.scene.start("FinalBossScene", {
           score: this.score,
           player: this.player,
+          lifes: this.player.lifes
         });
-      }
-
-      try {
-        this.enemies.children.iterate((enemy) => {
-          if (enemy) {
-            enemy.move();
-          }
-        });
-      } catch (error) {
-        console.log(error);
       }
     }
+    this.enemies.children.iterate((enemy) => {
+      if (enemy) {
+        enemy.move();
+      }
+    });
   }
 
   drawHearts(count) {
@@ -953,6 +965,7 @@ class FinalBossScene extends Phaser.Scene {
   init(data) {
     this.gameOver = false;
     this.score = data.score;
+    this.lifes = data.lifes;
   }
 
   preload() {
@@ -981,6 +994,16 @@ class FinalBossScene extends Phaser.Scene {
   }
 
   create() {
+    this.scoreText = this.add
+      .text(16, 16, "Score: " + this.score, {
+        fontSize: "32px",
+        fill: "#FFFF",
+      })
+      .setScrollFactor(0);
+
+    this.graphics = this.add.graphics();
+    this.drawHearts(this.lifes);
+
     // Definir los grupos y objetos
     this.platforms = this.physics.add.staticGroup();
     this.platforms.create(400, 568, "ground").setScale(6).refreshBody();
@@ -1012,9 +1035,65 @@ class FinalBossScene extends Phaser.Scene {
     this.shootKey = this.input.keyboard.addKey(
       Phaser.Input.Keyboard.KeyCodes.X
     );
+    this.pauseKey = this.input.keyboard.addKey(
+      Phaser.Input.Keyboard.KeyCodes.ESC
+    );
   }
 
   update() {
+    if (this.gameOver) {
+      try {
+        
+        // Recuperar el jugador actual de localStorage (en caso de que this.player.nombre esté nulo)
+        let storedPlayer = localStorage.getItem("selectedPlayer");
+        storedPlayer = storedPlayer ? JSON.parse(storedPlayer) : {};
+
+        const alias = storedPlayer.alias;
+        const now = new Date().toLocaleDateString();
+
+        // Actualizar el objeto del jugador actual (clave "selectedPlayer")
+        let selectedPlayer = localStorage.getItem("selectedPlayer");
+        selectedPlayer = selectedPlayer
+          ? JSON.parse(selectedPlayer)
+          : { alias, score: 0, date: "" };
+
+        if (this.score > selectedPlayer.score) {
+          selectedPlayer.score = this.score;
+          selectedPlayer.date = now;
+          localStorage.setItem(
+            "selectedPlayer",
+            JSON.stringify(selectedPlayer)
+          );
+        }
+
+        // Actualizar el arreglo global de registros ("records")
+        let records = localStorage.getItem("records");
+        records = records ? JSON.parse(records) : [];
+
+        const index = records.findIndex((rec) => rec.alias === alias);
+        if (index === -1) {
+          // Si no existe, agregarlo
+          records.push({ alias, score: this.score, date: now });
+        } else {
+          // Si existe, actualizar solo si el puntaje es mayor
+          if (this.score > records[index].score) {
+            records[index].score = this.score;
+            records[index].date = now;
+          }
+        }
+        localStorage.setItem("records", JSON.stringify(records));
+      } catch (error) {
+        console.error("Error al actualizar registros:", error);
+      }
+      window.location.href = "gameover.html";
+      console.log("Cambiando a GameOverScene");
+    }
+
+    if (Phaser.Input.Keyboard.JustDown(this.pauseKey)) {
+      this.scene.launch("PauseScene", { scene: this.scene.key });
+      this.scene.pause();
+    }
+
     // Reproducir la música de fondo
     if (!this.bossMusic) {
       this.bossMusic = this.sound.add("bossMusic", { loop: true });
@@ -1037,7 +1116,8 @@ class FinalBossScene extends Phaser.Scene {
         boss.receiveDamage(1);
         if (this.boss.health <= 0) {
           this.bossMusic.stop();
-          this.scene.start("GameOverScene", { reset: true });
+          this.score += 500;
+          window.location.href = "felicitacion.html";
         }
         bullet.destroy();
       }
@@ -1047,14 +1127,35 @@ class FinalBossScene extends Phaser.Scene {
       this.boss.fireballs,
       this.player,
       (player, fireball) => {
-        player.receiveDamage(1);
-        if (this.player.health <= 0) {
-          this.bossMusic.stop();
-          this.scene.start("GameOverScene", { reset: true });
-        }
+        player.takeDamage();
+        // if (this.player.health <= 0) {
+        //   this.bossMusic.stop();
+        //   this.scene.start("GameOverScene", { reset: true });
+        // }
         fireball.destroy();
       }
     );
+  }
+  drawHearts(count) {
+    const heartSpacing = 40;
+    const startX = this.cameras.main.width - 50;
+    const y = 60;
+
+    this.graphics.clear();
+    this.graphics.fillStyle(0x33ff66, 1);
+
+    for (let i = 0; i < count; i++) {
+      this.drawHeart(startX - i * heartSpacing, y, 20);
+    }
+  }
+
+  drawHeart(x, y, size) {
+    this.graphics.fillStyle("0x33ff66", 1);
+
+    this.graphics.fillCircle(x - size / 2.1, y, size / 2.1);
+    this.graphics.fillCircle(x + size / 2.1, y, size / 2.1);
+
+    this.graphics.fillTriangle(x - size, y, x + size, y, x, y + size * 1.5);
   }
 }
 
@@ -1093,6 +1194,7 @@ class GameOverScene extends Phaser.Scene {
       this.scene.start("MainScene", { reset: true });
     });
   }
+
 }
 
 class PauseScene extends Phaser.Scene {
@@ -1182,7 +1284,7 @@ function createAnimations(character, scene) {
       repeat: -1,
     });
   }
-  if (scene.scene.key === "MainScene") {
+  if (scene.scene.key === "Scene2") {
     scene.anims.create({
       key: "leftE",
       frames: scene.anims.generateFrameNumbers("enemy", { start: 0, end: 3 }),
@@ -1282,7 +1384,7 @@ const config = {
       debug: true,
     },
   },
-
+  //scene: [FinalBossScene]
   scene: [MainScene, Scene2, GameOverScene, FinalBossScene, PauseScene],
 };
 

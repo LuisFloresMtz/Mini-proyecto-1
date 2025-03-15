@@ -1,38 +1,41 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Records - Mi Videojuego</title>
-  <!-- Fuente retro -->
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-  <!-- CSS -->
-  <link rel="stylesheet" href="css/records.css">
-  <!-- GSAP y ScrollTrigger (si se desean más animaciones) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.1/gsap.min.js"></script>
-  <script src="js/records.js" defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Records - Laboratorio Mutante</title>
+    <!-- Fuente retro -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <!-- Hoja de estilos -->
+    <link rel="stylesheet" href="css/records.css">
 </head>
 <body>
-  <div id="records-container" class="screen">
-    <!-- Canvas de fondo animado -->
-    <canvas id="records-canvas"></canvas>
-    
-    <!-- Contenedor principal de contenido -->
-    <div id="records-content">
-      <h1>Records de Jugadores</h1>
-      <table id="records-table">
-        <thead>
-          <tr>
-            <th>Alias</th>
-            <th>Puntuación</th>
-            <th>Fecha</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Filas generadas dinámicamente -->
-        </tbody>
-      </table>
+    <div class="screen">
+        <!-- Canvas para fondo animado -->
+        <canvas id="records-canvas"></canvas>
+        <!-- Contenido principal -->
+        <div id="records-content">
+            <h1>Records del Laboratorio</h1>
+            <!-- Tabla de Records -->
+            <table id="records-table">
+                <thead>
+                    <tr>
+                        <th>Alias</th>
+                        <th>Score</th>
+                        <th>Fecha</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Se rellenará dinámicamente con JS -->
+                </tbody>
+            </table>
+            <!-- Botón para regresar al menú -->
+            <div id="return-button-container">
+                <button id="return-menu-btn" onclick="window.location.href='menu.html'">Regresar al Menú</button>
+            </div>
+        </div>
     </div>
-  </div>
+    <!-- Lógica JS -->
+    <script src="js/records.js"></script>
 </body>
 </html>
