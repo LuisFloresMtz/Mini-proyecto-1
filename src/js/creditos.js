@@ -115,7 +115,7 @@ document.addEventListener("DOMContentLoaded", () => {
       subject.pos.x = subject.initialPos.x + dx;
       subject.pos.y = subject.initialPos.y + dy;
       subject.style.left = `${subject.pos.x}px`;
-      subject.style.top =` ${subject.pos.y}px`;
+      subject.style.top = `${subject.pos.y}px`;
     }
 
     function onPointerUp(e) {

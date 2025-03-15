@@ -1041,7 +1041,7 @@ class Scene2 extends Phaser.Scene {
         return this.scene.start("FinalBossScene", {
           score: this.score,
           player: this.player,
-          lifes: this.player.lifes
+          lifes: this.lifes
         });
       }
     }
