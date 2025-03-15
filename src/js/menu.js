@@ -188,33 +188,29 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="credits">
               <div class="credits-members">
                 <div class="credit-item">
-                  <img src="src/team1.png" alt="Integrante 1" class="credit-photo">
+                  <img src="src/luisM.jpg" alt="Integrante 1" class="credit-photo">
                   <div class="credit-info">
                     <p class="credit-name">Luis David Flores Martínez</p>
                   </div>
                 </div>
                 <div class="credit-item">
-                  <img src="src/team2.png" alt="Integrante 2" class="credit-photo">
+                  <img src="src/emiM.jpg" alt="Integrante 2" class="credit-photo">
                   <div class="credit-info">
                     <p class="credit-name">Sergio Emiliano Hernández Villalpando</p>
                   </div>
                 </div>
                 <div class="credit-item">
-                  <img src="src/team3.png" alt="Integrante 3" class="credit-photo">
+                  <img src="src/ivanM.jpg" alt="Integrante 3" class="credit-photo">
                   <div class="credit-info">
                     <p class="credit-name">Iván Favela Ruvalcaba</p>
                   </div>
                 </div>
                 <div class="credit-item">
-                  <img src="src/team4.png" alt="Integrante 4" class="credit-photo">
+                  <img src="src/diegoM.jpg" alt="Integrante 4" class="credit-photo">
                   <div class="credit-info">
                     <p class="credit-name">Diego Iván Salas Pedroza</p>
                   </div>
                 </div>
-              </div>
-              <div class="credits-info">
-                <p class="credit-materia">Materia: Tecnologias WEB</p>
-                <p class="credit-fecha">Fecha: 15/03/2025</p>
               </div>
             </div>`;
           break;
