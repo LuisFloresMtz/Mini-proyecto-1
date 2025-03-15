@@ -496,6 +496,7 @@ class MainScene extends Phaser.Scene {
     // Reproducir la música de fondo
     if (!this.level1Music) {
       this.level1Music = this.sound.add("level1-music", { loop: true });
+      this.level1Music.setVolume(0.5);
       this.level1Music.play();
     }
 
@@ -574,7 +575,7 @@ class Scene2 extends Phaser.Scene {
     if (typeof this.score === "number") {
       this.score += 10;
       if (this.scoreText) {
-        this.scoreText.setText("Score: " + this.score);
+        this.scoreText.setText("Score: " + this.player.score);
       }
     }
     if (this.score >= 50) {
@@ -584,6 +585,7 @@ class Scene2 extends Phaser.Scene {
 
   init(data) {
     this.gameOver = false;
+    this.score = data.score;
     if (data.reset) {
       this.score = 0;
     }
@@ -622,7 +624,7 @@ class Scene2 extends Phaser.Scene {
     this.physics.world.setBounds(0, 0, this.levelWidth, height);
 
     //--------------------------------JUGADOR---------------------------------
-    this.player = new Player(this, width / 2, 450, "rick", "Luis", 0);
+    this.player = new Player(this, width / 2, 450, "rick", "Luis", this.score);
 
     //------------------------------CAMARA--------------------------------------
     this.cameras.main.setBounds(0, 0, this.levelWidth, height);
@@ -659,7 +661,7 @@ class Scene2 extends Phaser.Scene {
 
     //--------------------------PUNTUACIÓN-----------------------------------
     this.scoreText = this.add
-      .text(16, 16, "Score: 0", {
+      .text(16, 16, `Score: ${this.player.score}`, {
         fontSize: "32px",
         fill: "#FFFF",
       })
@@ -721,6 +723,7 @@ class Scene2 extends Phaser.Scene {
     // Reproducir la música de fondo
     if (!this.level2Music) {
       this.level2Music = this.sound.add("level2-music", { loop: true });
+      this.level2Music.setVolume(0.5);
       this.level2Music.play();
     }
     if (this.gameOver) {
@@ -782,6 +785,11 @@ class FinalBossScene extends Phaser.Scene {
     super({ key: "FinalBossScene" });
   }
 
+  init(data) {
+    this.gameOver = false;
+    this.score = data.score;
+  }
+
   preload() {
     // Cargar la musica de fondo
     this.load.audio("bossMusic", "assets/music/boss-music.mp3");
@@ -814,7 +822,7 @@ class FinalBossScene extends Phaser.Scene {
 
     // Crear jugador si no existe
     if (!this.player) {
-      this.player = new Player(this, 100, 300, "rick", "Luis", 0);
+      this.player = new Player(this, 100, 300, "rick", "Luis", this.score);
       createAnimations("rick", this);
       this.physics.add.collider(this.player, this.platforms);
     }
@@ -845,6 +853,7 @@ class FinalBossScene extends Phaser.Scene {
     // Reproducir la música de fondo
     if (!this.bossMusic) {
       this.bossMusic = this.sound.add("bossMusic", { loop: true });
+      this.bossMusic.setVolume(0.5);
       this.bossMusic.play();
     }
 
