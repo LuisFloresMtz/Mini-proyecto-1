@@ -1,76 +1,110 @@
 /* Variables CSS */
 :root {
-  --records-bg: #2a0134;
-}
-
-/* Contenedor principal */
-.screen {
-    width: 100%;
-    height: 100vh;
-    background: var(--records-bg);
-    overflow: hidden;
-}
+    --records-bg: #2a0134;
+  }
   
-#records-canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
-    background: linear-gradient(135deg, var(--records-bg), #1b0e2e);
-}
+  /* Contenedor principal */
+  .screen {
+      width: 100%;
+      height: 100vh;
+      background: var(--records-bg);
+      overflow: hidden;
+  }
   
-#records-content {
-    position: relative;
-    z-index: 2;
-    padding: 40px;
-    max-width: 900px;
-    margin: 0 auto;
-    text-align: center;
-    color: #ffdd33;
-}
+  /* Canvas de fondo */
+  #records-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      background: linear-gradient(135deg, var(--records-bg), #1b0e2e);
+  }
   
-#records-content h1 {
-    font-size: 36px;
-    color: #ff8c00;
-    text-shadow: 0 0 8px #ff6700;
-    margin-bottom: 30px;
-}
+  /* Contenido principal utilizando Grid */
+  #records-content {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      grid-template-areas:
+          "title"
+          "table"
+          "button";
+      grid-template-rows: auto 1fr auto;
+      gap: 20px;
+      padding: 40px;
+      max-width: 900px;
+      margin: 0 auto;
+      text-align: center;
+      color: #ffdd33;
+  }
   
-#records-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: #1b0e2e;
-    box-shadow: 0 0 10px #ff6700;
-    margin: 0 auto;
-}
-#records-table thead th {
-    border: 2px solid #ff6700;
-    padding: 10px;
-    font-size: 16px;
-    background: var(--records-bg);
-    color: #ffdd33;
-}
-#records-table tbody td {
-    border: 1px solid #ff6700;
-    padding: 8px;
-    font-size: 14px;
-    color: #ffdd33;
-}
+  #records-content h1 {
+      grid-area: title;
+      font-size: 36px;
+      color: #ff8c00;
+      text-shadow: 0 0 8px #ff6700;
+      margin: 0;
+  }
   
-#records-table tbody tr:hover {
-    background: rgba(255, 103, 103, 0.2);
-    cursor: pointer;
-}
+  /* Estilos de la tabla */
+  #records-table {
+      grid-area: table;
+      width: 100%;
+      border-collapse: collapse;
+      background: #1b0e2e;
+      box-shadow: 0 0 10px #ff6700;
+      margin: 0 auto;
+  }
   
-@media (max-width: 600px) {
-    #records-content h1 {
-      font-size: 28px;
-    }
-    #records-table thead th, 
-    #records-table tbody td {
-      font-size: 12px;
-      padding: 6px;
-    }
-}
+  #records-table thead th {
+      border: 2px solid #ff6700;
+      padding: 10px;
+      font-size: 16px;
+      background: var(--records-bg);
+      color: #ffdd33;
+  }
+  
+  #records-table tbody td {
+      border: 1px solid #ff6700;
+      padding: 8px;
+      font-size: 14px;
+      color: #ffdd33;
+  }
+  
+  #records-table tbody tr:hover {
+      background: rgba(255, 103, 103, 0.2);
+      cursor: pointer;
+  }
+  
+  /* Botón para regresar */
+  #return-button-container {
+      grid-area: button;
+      margin-top: 20px;
+  }
+  
+  #return-menu-btn {
+      background: #ff8c00;
+      border: none;
+      padding: 10px 20px;
+      font-size: 14px;
+      cursor: pointer;
+      border-radius: 5px;
+      transition: background 0.3s;
+  }
+  
+  #return-menu-btn:hover {
+      background: #ff6700;
+  }
+  
+  @media (max-width: 600px) {
+      #records-content h1 {
+        font-size: 28px;
+      }
+      #records-table thead th, 
+      #records-table tbody td {
+        font-size: 12px;
+        padding: 6px;
+      }
+  }

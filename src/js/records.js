@@ -2,18 +2,18 @@ document.addEventListener("DOMContentLoaded", () => {
   // Ajuste del canvas de fondo
   const canvas = document.getElementById("records-canvas");
   const ctx = canvas.getContext("2d");
-  
+
   function resizeCanvas() {
     canvas.width = canvas.offsetWidth;
     canvas.height = canvas.offsetHeight;
   }
   window.addEventListener("resize", resizeCanvas);
   resizeCanvas();
-  
+
   // Fondo animado: partículas
   let particles = [];
   const numParticles = 50;
-  
+
   function initParticles() {
     particles = [];
     for (let i = 0; i < numParticles; i++) {
@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
   initParticles();
-  
+
   function updateParticles() {
     particles.forEach(p => {
       p.x += p.vx;
@@ -39,9 +39,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (p.y > canvas.height) p.y = 0;
     });
   }
-  
+
   function drawParticles() {
-    // Limpiar el canvas pero sin borrar el degradado (el degradado se establece en CSS en el background)
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     particles.forEach(p => {
       ctx.beginPath();
@@ -50,21 +49,21 @@ document.addEventListener("DOMContentLoaded", () => {
       ctx.fill();
     });
   }
-  
+
   function animateBackground() {
     updateParticles();
     drawParticles();
     requestAnimationFrame(animateBackground);
   }
   animateBackground();
-  
+
   // LEER la variable "records" del localStorage
   const storedRecords = localStorage.getItem("records");
   let records = storedRecords ? JSON.parse(storedRecords) : [];
-  
+
   // Ordenar el arreglo de mayor a menor puntuación
   records.sort((a, b) => b.score - a.score);
-  
+
   // Rellenar la tabla
   const tbody = document.querySelector("#records-table tbody");
   if (records.length === 0) {
@@ -80,7 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
       tbody.appendChild(tr);
     });
   }
-  
+
   // Animar la aparición de las filas de la tabla con GSAP
   gsap.from("#records-table tbody tr", {
     duration: 1,
@@ -89,4 +88,12 @@ document.addEventListener("DOMContentLoaded", () => {
     stagger: 0.1,
     ease: "power2.out"
   });
+
+  // Botón para regresar al menú
+  const returnBtn = document.getElementById("return-menu-btn");
+  if (returnBtn) {
+      returnBtn.addEventListener("click", () => {
+          window.location.href = "menu.html";
+      });
+  }
 });

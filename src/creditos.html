@@ -1,57 +1,113 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Créditos - Laboratorio Mutante</title>
-    <!-- Fuente retro -->
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-    <!-- Hoja de estilos -->
-    <link rel="stylesheet" href="css/creditos.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Créditos - Laboratorio Mutante</title>
+  <!-- Fuente retro -->
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+  <!-- GSAP -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.1/gsap.min.js"></script>
+  <!-- Lottie Player -->
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+  <!-- Hoja de estilos -->
+  <link rel="stylesheet" href="css/creditos.css" />
+  <!-- Lógica JS -->
+  <script src="js/creditos.js" defer></script>
 </head>
 <body>
-    <div id="credits-container" class="screen">
-        <!-- Header de créditos -->
-        <header id="header-overlay">
-            <h1>Laboratorio de Mutaciones</h1>
-            <p class="lab-desc">
-                Bienvenido a la sección secreta de nuestro laboratorio mutante.<br>
-                Conoce a los integrantes del proyecto.
-            </p>
-        </header>
+  <div id="credits-container" class="screen fullscreen">
+    <!-- Canvas para fondo animado -->
+    <canvas id="credits-canvas"></canvas>
 
-        <!-- Área de integrantes -->
-        <div id="participants-container">
-            <div class="credit-item">
-                <img src="src/luis.jpg" alt="Integrante 1" class="credit-photo">
-                <p class="credit-name">Luis David Flores Martínez</p>
-            </div>
-            <div class="credit-item">
-                <img src="src/emi.jpg" alt="Integrante 2" class="credit-photo">
-                <p class="credit-name">Sergio Emiliano Hernández Villalpando</p>
-            </div>
-            <div class="credit-item">
-                <img src="src/ivan.jpg" alt="Integrante 3" class="credit-photo">
-                <p class="credit-name">Iván Favela Ruvalcaba</p>
-            </div>
-            <div class="credit-item">
-                <img src="src/diego.jpg" alt="Integrante 4" class="credit-photo">
-                <p class="credit-name">Diego Iván Salas Pedroza</p>
-            </div>
-        </div>
-
-        <!-- Información de la Materia y Fecha -->
-        <div id="course-info">
-            <p>Materia: Tecnologías Web</p>
-            <p>Fecha: 15/03/2025</p>
-        </div>
-
-        <!-- Botón para regresar al menú -->
-        <div id="return-button-container">
-            <button id="return-menu-btn">Regresar al Menú</button>
-        </div>
+    <!-- Header de créditos -->
+    <div id="header-overlay">
+      <h1>Laboratorio de Mutaciones</h1>
+      <p class="lab-desc">
+        Bienvenido a la sección secreta de nuestro laboratorio mutante.<br />
+        Aquí se encuentran los genios (y locos) detrás del proyecto.<br />
+        Arrastra cada <em>sujeto de prueba</em> hasta la <em>cámara de mutación</em> que le corresponde.
+      </p>
     </div>
-    <!-- Lógica JS -->
-    <script src="js/creditos.js"></script>
+
+    <!-- Contenedor de drop zones (cámaras de mutación) -->
+    <div id="dropzones-container">
+      <div class="drop-zone" data-target="1">
+        <div class="credit-item">
+          <img src="src/luis.jpg" alt="Integrante 1" class="credit-photo" />
+          <div class="credit-info">
+            <p class="credit-name">Luis David Flores Martínez</p>
+          </div>
+        </div>
+      </div>
+      <div class="drop-zone" data-target="2">
+        <div class="credit-item">
+          <img src="src/emi.jpg" alt="Integrante 2" class="credit-photo" />
+          <div class="credit-info">
+            <p class="credit-name">Sergio Emiliano Hernández Villalpando</p>
+          </div>
+        </div>
+      </div>
+      <div class="drop-zone" data-target="3">
+        <div class="credit-item">
+          <img src="src/ivan.jpg" alt="Integrante 3" class="credit-photo" />
+          <div class="credit-info">
+            <p class="credit-name">Iván Favela Ruvalcaba</p>
+          </div>
+        </div>
+      </div>
+      <div class="drop-zone" data-target="4">
+        <div class="credit-item">
+          <img src="src/diego.jpg" alt="Integrante 4" class="credit-photo" />
+          <div class="credit-info">
+            <p class="credit-name">Diego Iván Salas Pedroza</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contenedor de sujetos draggables -->
+    <div id="subjects-container">
+      <img src="src/luisM.jpg" alt="Mutante 1" class="draggable" data-id="1" draggable="false" />
+      <img src="src/emiM.jpg" alt="Mutante 2" class="draggable" data-id="2" draggable="false" />
+      <img src="src/ivanM.jpg" alt="Mutante 3" class="draggable" data-id="3" draggable="false" />
+      <img src="src/diegoM.jpg" alt="Mutante 4" class="draggable" data-id="4" draggable="false" />
+    </div>
+
+    <!-- Animación Lottie principal (monstruo mutante) -->
+    <div id="monster-animation">
+      <lottie-player
+        src="https://lottie.host/93c02a34-dd32-4bd0-98c0-3fde437da56d/uO3lwxB8E8.json"
+        background="transparent"
+        speed="1"
+        style="width: 150px; height: 150px;"
+        loop
+        autoplay
+      ></lottie-player>
+    </div>
+
+    <!-- Animación Lottie complementaria (efecto glitch mutante) -->
+    <div id="glitch-animation">
+      <lottie-player
+        src="https://lottie.host/181c61f9-9da6-425d-80ac-8b4a07b7f790/cLCgASHKn4.json"
+        background="transparent"
+        speed="1"
+        style="width: 100px; height: 100px;"
+        loop
+        autoplay
+      ></lottie-player>
+    </div>
+
+    <!-- Botón para regresar al menú principal -->
+    <div id="return-button-container">
+      <button id="return-menu-btn">Volver al Menú</button>
+    </div>
+
+    <!-- Información opcional de la materia y fecha -->
+    <div id="course-info">
+      <p>Materia: Tecnologías Web</p>
+      <p>Fecha: 15/03/2025</p>
+    </div>
+  </div>
 </body>
 </html>
