@@ -1,22 +1,46 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Créditos - Laboratorio Mutante</title>
   <!-- Fuente retro -->
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
   <!-- GSAP -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.1/gsap.min.js"></script>
   <!-- Lottie Player -->
-  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+  <script
+    src="https://unpkg.com/@dotlottie/player-component@2.7.12/dist/dotlottie-player.mjs"
+    type="module"
+  ></script>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
   <!-- Hoja de estilos -->
-  <link rel="stylesheet" href="css/creditos.css">
+  <link rel="stylesheet" href="css/creditos.css" />
   <!-- Lógica JS -->
   <script src="js/creditos.js" defer></script>
 </head>
 <body>
-  <div id="credits-container" class="screen fullscreen">
+  <!-- Navbar de Bootstrap (fijo, no interfiere con el contenido por su z-index) -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top" style="z-index: 100;">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="menu.html">Laboratorio Mutante</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" 
+              aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarContent">
+        <ul class="navbar-nav ms-auto">
+          <!-- Puedes agregar otros links si lo deseas -->
+          <li class="nav-item">
+            <a class="nav-link" href="#course-info">Información</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div id="credits-container" class="screen fullscreen" style="margin-top: 60px;">
     <!-- Canvas para fondo animado -->
     <canvas id="credits-canvas"></canvas>
 
@@ -24,8 +48,8 @@
     <div id="header-overlay">
       <h1>Laboratorio de Mutaciones</h1>
       <p class="lab-desc">
-        Bienvenido a la sección secreta de nuestro laboratorio mutante.<br>
-        Aquí se encuentran los genios (y locos) detrás del proyecto.<br>
+        Bienvenido a la sección secreta de nuestro laboratorio mutante.<br />
+        Aquí se encuentran los genios (y locos) detrás del proyecto.<br />
         Arrastra cada <em>sujeto de prueba</em> hasta la <em>cámara de mutación</em> que le corresponde.
       </p>
     </div>
@@ -34,7 +58,7 @@
     <div id="dropzones-container">
       <div class="drop-zone" data-target="1">
         <div class="credit-item">
-          <img src="img/team1.png" alt="Integrante 1" class="credit-photo">
+          <img src="src/luis.jpg" alt="Integrante 1" class="credit-photo" />
           <div class="credit-info">
             <p class="credit-name">Luis David Flores Martínez</p>
           </div>
@@ -42,7 +66,7 @@
       </div>
       <div class="drop-zone" data-target="2">
         <div class="credit-item">
-          <img src="img/team2.png" alt="Integrante 2" class="credit-photo">
+          <img src="src/emi.jpg" alt="Integrante 2" class="credit-photo" />
           <div class="credit-info">
             <p class="credit-name">Sergio Emiliano Hernández Villalpando</p>
           </div>
@@ -50,7 +74,7 @@
       </div>
       <div class="drop-zone" data-target="3">
         <div class="credit-item">
-          <img src="img/team3.png" alt="Integrante 3" class="credit-photo">
+          <img src="src/ivan.jpg" alt="Integrante 3" class="credit-photo" />
           <div class="credit-info">
             <p class="credit-name">Iván Favela Ruvalcaba</p>
           </div>
@@ -58,7 +82,7 @@
       </div>
       <div class="drop-zone" data-target="4">
         <div class="credit-item">
-          <img src="img/team4.png" alt="Integrante 4" class="credit-photo">
+          <img src="src/diego.jpg" alt="Integrante 4" class="credit-photo" />
           <div class="credit-info">
             <p class="credit-name">Diego Iván Salas Pedroza</p>
           </div>
@@ -68,41 +92,49 @@
 
     <!-- Contenedor de sujetos draggables -->
     <div id="subjects-container">
-      <img src="img/mutant1.png" alt="Mutante 1" class="draggable" data-id="1" draggable="false">
-      <img src="img/mutant2.png" alt="Mutante 2" class="draggable" data-id="2" draggable="false">
-      <img src="img/mutant3.png" alt="Mutante 3" class="draggable" data-id="3" draggable="false">
-      <img src="img/mutant4.png" alt="Mutante 4" class="draggable" data-id="4" draggable="false">
+      <img src="src/luisM.jpg" alt="Mutante 1" class="draggable" data-id="1" draggable="false" />
+      <img src="src/emiM.jpg" alt="Mutante 2" class="draggable" data-id="2" draggable="false" />
+      <img src="src/ivanM.jpg" alt="Mutante 3" class="draggable" data-id="3" draggable="false" />
+      <img src="src/diegoM.jpg" alt="Mutante 4" class="draggable" data-id="4" draggable="false" />
     </div>
 
     <!-- Animación Lottie principal (monstruo mutante) -->
     <div id="monster-animation">
-      <lottie-player
+      <dotlottie-player
         src="https://lottie.host/93c02a34-dd32-4bd0-98c0-3fde437da56d/uO3lwxB8E8.json"
         background="transparent"
         speed="1"
         style="width: 150px; height: 150px;"
         loop
-        autoplay>
-      </lottie-player>
+        autoplay
+      ></dotlottie-player>
     </div>
 
     <!-- Animación Lottie complementaria (efecto glitch mutante) -->
     <div id="glitch-animation">
-      <lottie-player
+      <dotlottie-player
         src="https://lottie.host/181c61f9-9da6-425d-80ac-8b4a07b7f790/cLCgASHKn4.json"
         background="transparent"
         speed="1"
         style="width: 100px; height: 100px;"
         loop
-        autoplay>
-      </lottie-player>
+        autoplay
+      ></dotlottie-player>
     </div>
 
-    <!-- Información de la Materia y Fecha -->
+    <!-- Botón para regresar al menú principal -->
+    <div id="return-button-container hiden">
+      <button id="return-menu-btn" class="btn btn-primary">Volver al Menú</button>
+    </div>
+
+    <!-- Información opcional de la materia y fecha -->
     <div id="course-info">
       <p>Materia: Tecnologías Web</p>
       <p>Fecha: 15/03/2025</p>
     </div>
   </div>
+
+  <!-- Bootstrap Bundle con Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
