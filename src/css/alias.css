@@ -1,104 +1,104 @@
+/* Variables CSS */
+:root {
+  --alias-bg: #1b0e2e;
+  --alias-border: #ff6700;
+}
+
 /* Reset y fuente */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
     font-family: 'Press Start 2P', sans-serif;
-  }
+}
   
-  body {
+body {
     background: linear-gradient(135deg, #2a0134, #1b0e2e);
     display: grid;
     place-items: center;
     min-height: 100vh;
     color: #ffdd33;
     overflow: hidden;
-  }
+}
   
-  /* Ocultar elementos con clase "hidden" */
-  .hidden {
+.hidden {
     display: none;
-  }
+}
   
-  /* Animación de introducción */
-  #animation-container {
+#animation-container {
     display: grid;
     place-items: center;
     text-align: center;
-  }
-  .main {
+}
+.main {
     font-size: 3rem;
     color: #ff8c00; /* Naranja Retro */
     opacity: 0;
-  }
-  .footer {
+}
+.footer {
     font-size: 1rem;
     color: #ffdd33;
     opacity: 0;
     margin-top: 20px;
-  }
+}
   
-  /* Contenedor de alias (registro) */
-  #alias-container {
-    background: #1b0e2e;
-    border: 4px double #ff6700;
+/* Contenedor de alias (registro) */
+#alias-container {
+    background: var(--alias-bg);
+    border: 4px double var(--alias-border);
     padding: 30px;
     border-radius: 15px;
-    box-shadow: 0 0 10px #ff6700;
+    box-shadow: 0 0 10px var(--alias-border);
     text-align: center;
     width: 90%;
     max-width: 600px;
-  }
+}
   
-  /* Título en alias-container */
-  #alias-container h1 {
+#alias-container h1 {
     font-size: 24px;
     color: #ff8c00;
     margin-bottom: 15px;
-    text-shadow: 0 0 4px #ff6700;
-  }
+    text-shadow: 0 0 4px var(--alias-border);
+}
   
-  /* Área de visualización del alias */
-  #alias-display {
+#alias-display {
     background: #000;
-    border: 2px solid #ff6700;
+    border: 2px solid var(--alias-border);
     color: #ffdd33;
     font-size: 20px;
     letter-spacing: 4px;
     height: 40px;
     line-height: 40px;
     margin-bottom: 20px;
-  }
+}
   
-  /* Teclado customizado */
-  #keyboard-container {
+#keyboard-container {
     display: flex;
     flex-direction: column;
     gap: 10px;
-  }
-  .key-row {
+}
+.key-row {
     display: flex;
     justify-content: center;
     gap: 5px;
-  }
-  .key {
+}
+.key {
     background: #000;
-    border: 2px solid #ff6700;
+    border: 2px solid var(--alias-border);
     color: #ffdd33;
     padding: 10px 15px;
     font-size: 16px;
     cursor: pointer;
     transition: transform 0.2s, background-color 0.2s;
     border-radius: 5px;
-  }
-  .key:hover {
-    background: #ff6700;
+}
+.key:hover {
+    background: var(--alias-border);
     color: #000;
     transform: scale(1.05);
-  }
-  .key.special {
+}
+.key.special {
     background: #ff8c00;
     border-color: #ff8c00;
     color: #000;
-  }
-  
+}

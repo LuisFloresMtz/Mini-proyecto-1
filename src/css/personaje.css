@@ -1,22 +1,26 @@
+/* Variables CSS */
+:root {
+  --personaje-border: #ff6700;
+}
+
 /* Reset y fuente */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
     font-family: 'Press Start 2P', sans-serif;
-  }
+}
   
-  body {
-    background-color: #2a0134; /* Fondo púrpura oscuro */
-    color: #ffdd33;           /* Texto en amarillo neón */
+body {
+    background-color: #2a0134;
+    color: #ffdd33;
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-  }
+}
   
-  /* Contenedor principal */
-  .screen {
+.screen {
     width: 100%;
     height: 100vh;
     position: relative;
@@ -25,60 +29,55 @@
     flex-direction: column;
     align-items: center;
     background: linear-gradient(135deg, #2a0134, #1b0e2e);
-  }
+}
   
-  /* Encabezado */
-  #selection-header {
+#selection-header {
     text-align: center;
     margin-bottom: 30px;
-  }
-  #selection-header h1 {
+}
+#selection-header h1 {
     font-size: 32px;
-    color: #ff8c00; /* Naranja Retro */
-    text-shadow: 0 0 5px #ff6700;
+    color: #ff8c00;
+    text-shadow: 0 0 5px var(--personaje-border);
     margin-bottom: 10px;
-  }
-  #selection-header p {
+}
+#selection-header p {
     font-size: 16px;
     color: #ffdd33;
-  }
+}
   
-  /* Contenido principal */
-  #selection-content {
+#selection-content {
     display: flex;
     width: 90%;
     max-width: 800px;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 30px;
-  }
+}
   
-  /* Contenedor de personajes */
-  #characters-container {
+#characters-container {
     display: flex;
     flex-direction: column;
     gap: 20px;
     width: 40%;
     align-items: center;
-  }
+}
   
-  /* Estilo de los personajes (draggables) */
-  .character {
+.character {
     width: 150px;
     height: auto;
-    border: 2px solid #ff6700;
+    border: 2px solid var(--personaje-border);
     border-radius: 10px;
     background-color: #000;
     cursor: grab;
     transition: transform 0.2s;
-  }
-  .character:active {
+}
+.character:active {
     cursor: grabbing;
     transform: scale(1.1);
-  }
+}
   
-  /* Zona de selección (drop zone) */
-  #dropzone {
+#dropzone {
     width: 40%;
     height: 250px;
     border: 4px dashed #ffffff;
@@ -88,25 +87,23 @@
     justify-content: center;
     background: rgba(0,0,0,0.3);
     position: relative;
-  }
-  #dropzone p {
+}
+#dropzone p {
     font-size: 20px;
     color: #ff8c00;
-  }
+}
   
-  /* Botón para iniciar juego */
-  #start-btn {
+#start-btn {
     background: #ff8c00;
-    border: 2px solid #ff6700;
+    border: 2px solid var(--personaje-border);
     color: #000;
     padding: 15px 30px;
     font-size: 18px;
     cursor: pointer;
     border-radius: 10px;
     transition: transform 0.2s, background 0.2s;
-  }
-  #start-btn:hover {
+}
+#start-btn:hover {
     transform: scale(1.05);
-    background: #ff6700;
-  }
-  
+    background: var(--personaje-border);
+}

@@ -1,3 +1,8 @@
+/* Variables CSS */
+:root {
+  --credit-header-color: #ff8c00;
+}
+
 /* Reset y fuente */
 * {
   margin: 0;
@@ -6,7 +11,6 @@
   font-family: 'Press Start 2P', sans-serif;
 }
 
-/* Pantalla fullscreen */
 .screen.fullscreen {
   width: 100%;
   height: 100vh;
@@ -15,7 +19,6 @@
   background: linear-gradient(135deg, #2a0134, #1b0e2e);
 }
 
-/* Canvas para fondo animado */
 #credits-canvas {
   position: absolute;
   top: 0;
@@ -26,20 +29,21 @@
   background: linear-gradient(135deg, #2a0134, #1b0e2e);
 }
 
-/* Header overlay */
 #header-overlay {
   position: absolute;
   top: 5%;
   width: 100%;
   text-align: center;
   z-index: 10;
-  color: #ff8c00;
+  color: var(--credit-header-color);
   text-shadow: 0 0 6px #ff6700;
 }
+
 #header-overlay h1 {
   font-size: 32px;
   margin-bottom: 10px;
 }
+
 .lab-desc {
   font-size: 16px;
   color: #ffdd33;
@@ -48,7 +52,7 @@
   line-height: 1.4;
 }
 
-/* Drop zones (cámaras de mutación) */
+/* Resto del archivo sin cambios */
 #dropzones-container {
   position: absolute;
   top: 40%;
@@ -80,7 +84,6 @@
   border-color: #ff0033 !important;
 }
 
-/* Créditos internos en cada drop zone */
 .credit-item {
   display: flex;
   flex-direction: column;
@@ -101,7 +104,6 @@
   color: #ffffff;
 }
 
-/* Sujetos draggables */
 #subjects-container {
   position: absolute;
   top: 0;
@@ -129,7 +131,6 @@
   transform: scale(1.1);
 }
 
-/* Animaciones Lottie */
 #monster-animation {
   position: absolute;
   bottom: 5%;
@@ -143,7 +144,6 @@
   z-index: 30;
 }
 
-/* Información del curso */
 #course-info {
   position: absolute;
   bottom: 5%;
