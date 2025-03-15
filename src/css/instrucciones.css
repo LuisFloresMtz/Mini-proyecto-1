@@ -5,10 +5,10 @@
 
 /* Fuente retro y restablecimiento */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Press Start 2P', sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Press Start 2P', sans-serif;
 }
 
 /* Layout base */
@@ -77,6 +77,20 @@ nav a.active {
   opacity: 1;
   color: #00ccff;
   text-decoration: underline;
+}
+
+#return-menu-btn {
+  background: #ff8c00;
+  border: none;
+  padding: 10px 20px;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 5px;
+  margin-top: 20px;
+  transition: background 0.3s;
+}
+#return-menu-btn:hover {
+  background: #ff6700;
 }
 
 @media (max-width: 600px) {
