@@ -165,7 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ctx.drawImage(titleImg, titleX, titleY, desiredWidth, calculatedHeight);
     }
     ctx.restore();
-
+  
     // "ARE YOU READY?"
     ctx.save();
     ctx.fillStyle = "#ffffff";
@@ -173,12 +173,12 @@ document.addEventListener("DOMContentLoaded", () => {
     ctx.textAlign = "center";
     ctx.fillText("ARE YOU READY?", canvas.width / 2, canvas.height * 0.55);
     ctx.restore();
-
+  
     // Opciones interactivas "YES" y "NO"
     const optionY = canvas.height * 0.65;
     ctx.save();
     ctx.font = "24px monospace";
-
+  
     // "YES"
     const yesText = "YES";
     let yesMetrics = ctx.measureText(yesText);
@@ -190,7 +190,7 @@ document.addEventListener("DOMContentLoaded", () => {
     yesArea.y = optionY - 24;
     yesArea.width = yesWidth;
     yesArea.height = 30;
-
+  
     // "NO"
     const noText = "NO";
     let noMetrics = ctx.measureText(noText);
@@ -203,14 +203,25 @@ document.addEventListener("DOMContentLoaded", () => {
     noArea.width = noWidth;
     noArea.height = 30;
     ctx.restore();
-
+  
     // Elementos retro adicionales (HI-SCORE, corazones, etc.)
     ctx.save();
     ctx.fillStyle = "#ffdd33";
     ctx.font = "20px monospace";
     ctx.textAlign = "left";
+  
+    // Recuperar el hi-score del localStorage
+    let hiScore = 0;
+    const records = localStorage.getItem("records");
+    if (records) {
+      const recArr = JSON.parse(records);
+      if (recArr.length > 0) {
+        hiScore = Math.max(...recArr.map(record => record.score));
+      }
+    }
+  
     ctx.fillText("HI-SCORE", 50, 60);
-    ctx.fillText("12300", 50, 90);
+    ctx.fillText(hiScore, 50, 90);
     drawHearts(3);
     ctx.restore();
   }
