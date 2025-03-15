@@ -14,9 +14,11 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     this.setCollideWorldBounds(true);
 
     this.nombre = nombre;
+    this.health = 3;
     this.score = score;
     this.shooting = false;
     this.bullets = scene.physics.add.group();
+    this.lastDirection = "right";
 
     // Ajustar tamaño del cuerpo del jugador si es necesario
     this.body.setSize(this.width * 0.8, this.height * 0.9);
@@ -31,7 +33,16 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
-  shoot(side) {
+  receiveDamage(damage) {
+    this.health -= damage;
+
+    if (this.health <= 0) {
+      this.scene.gameOver = true;
+      this.scene.scene.start("MainScene", { reset: true });
+    }
+  }
+
+  shoot(side = "right") {
     if (this.shooting) return;
 
     this.shooting = true;
@@ -97,10 +108,10 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
     const player = this.scene.player;
     if (player.x < this.x) {
       this.setVelocityX(-this.speed);
-      this.anims.play("leftM", true);
+      this.anims.play("leftE", true);
     } else {
       this.setVelocityX(this.speed);
-      this.anims.play("rightM", true);
+      this.anims.play("rightE", true);
     }
 
     // Saltar
@@ -119,41 +130,66 @@ class FinalBoss extends Phaser.Physics.Arcade.Sprite {
     super(scene, x, y, texture);
 
     scene.add.existing(this);
-    scene.physics.add.existing(this);
-
+    scene.physics.world.enable(this);
     this.setCollideWorldBounds(true);
-    this.health = 100;
-    this.setScale(2);
 
-    // 🔹 Asegurar que las animaciones existen antes de jugarlas
-    this.scene.events.once("createAnimations", this.initAnimations, this);
+    this.health = 15;
+    this.fireballs = scene.physics.add.group();
   }
 
-  initAnimations() {
-    this.anims.play("turnB");
+  receiveDamage(damage) {
+    console.log(this);
+    this.health -= damage;
+
+    if (this.health <= 0) {
+      this.scene.events.emit("bossDefeated");
+      this.destroy();
+    }
   }
 
-  update() {
-    if (!this.scene.player) return;
+  attack() {
+    if (!this.active) return;
 
-    const player = this.scene.player;
-    const speed = 80;
-    const distance = Phaser.Math.Distance.Between(
-      this.x,
-      this.y,
-      player.x,
-      player.y
+    const directionX = this.scene.player.x - this.x; // Diferencia en el eje X
+    const directionY = this.scene.player.y - this.y; // Diferencia en el eje Y
+
+    // Calcular la magnitud de la distancia
+    const distance = Math.sqrt(
+      directionX * directionX + directionY * directionY
     );
 
-    // 🔹 Seguir al jugador solo si está cerca
-    if (distance < 300) {
-      this.scene.physics.moveToObject(this, player, speed);
-    }
+    // Normalizar la dirección (hacer que la magnitud sea 1)
+    const velocityX = directionX / distance;
+    const velocityY = directionY / distance;
 
-    // 🔹 Cambiar animación según la dirección
-    if (this.x < player.x) {
-      this.anims.play("rightB", true);
-    } else if (this.x > player.x) {
+    // Crear el disparo y posicionarlo
+    const fireball = this.fireballs.create(this.x, this.y, "fireball");
+
+    // Desactivar la gravedad de la bala
+    fireball.body.allowGravity = false;
+
+    // Aplicar la velocidad en la dirección del jugador
+    fireball.setVelocityX(velocityX * 500); // 200 es la velocidad, puedes ajustarlo
+    fireball.setVelocityY(velocityY * 200); // 200 es la velocidad, puedes ajustarlo
+
+    // Animación del disparo
+    fireball.anims.play("fireball", true);
+  }
+
+  move() {
+    const amplitude = 100;
+    const speed = 100;
+
+    // Movimiento en el eje X: izquierda y derecha
+    this.setVelocityX(speed);
+
+    // Movimiento en el eje Y: patrón de movimiento vertical en zig-zag
+    const sinWave = Math.sin(this.scene.time.now / 1000) * amplitude;
+    this.setVelocityY(sinWave); // Aplica el movimiento en el eje Y con la onda sinusoidal
+
+    // Cambiar la animación del boss
+    if (this.body.velocity.x < 0) {
+    } else if (this.body.velocity.x > 0) {
       this.anims.play("leftB", true);
     }
   }
@@ -202,6 +238,10 @@ class MainScene extends Phaser.Scene {
     this.load.image("sky", "assets/sky.gif");
     this.load.image("ground", "assets/platform.png");
     this.load.image("bullet", "assets/bullet.png");
+    this.load.spritesheet("enemy", "assets/enemigo.png", {
+      frameWidth: 40,
+      frameHeight: 50,
+    });
     this.load.spritesheet("rick", "assets/rick.png", {
       frameWidth: 40,
       frameHeight: 50,
@@ -210,17 +250,13 @@ class MainScene extends Phaser.Scene {
       frameWidth: 40,
       frameHeight: 50,
     });
-    this.load.spritesheet("boss", "assets/boss.png", {
-      frameWidth: 40,
-      frameHeight: 50,
-    });
   }
 
   create() {
     const screenWidth = this.sys.game.config.width;
     const screenHeight = this.sys.game.config.height;
-
-    console.log(this.textures.list);
+    this.player = new Player(this, 100, 450, "morty", "Luis", 0);
+    this.player.setDepth(10);
 
     this.background = this.add
       .image(0, 0, "sky")
@@ -234,19 +270,13 @@ class MainScene extends Phaser.Scene {
     this.platforms.create(50, 250, "ground");
     this.platforms.create(750, 220, "ground");
 
-    this.player = new Player(this, 100, 450, "rick", "Luis", 0);
-
     this.enemies = this.physics.add.group();
 
     for (let i = 0; i < 12; i++) {
       let x = 12 + i * 70;
-      let enemy = new Enemy(this, x, 0, "morty"); // Crear instancia de Enemy
+      let enemy = new Enemy(this, x, 0, "enemy"); // Crear instancia de Enemy
       this.enemies.add(enemy); // Agregar manualmente al grupo
     }
-
-    this.enemies.getChildren().forEach((enemy) => {
-      console.log(enemy.texture.key); // Verifica el key de la textura
-    });
 
     this.enemies.children.iterate((enemy) => {
       if (enemy) {
@@ -261,9 +291,9 @@ class MainScene extends Phaser.Scene {
     });
 
     this.physics.add.collider(this.enemies, this.platforms);
-    this.physics.add.collider(this.player, this.enemies, (player, enemy) => {
+    this.physics.add.collider(this.player, this.enemies, () => {
       this.gameOver = true;
-      this.scene.start("FinalBossScene", { score: this.score });
+      this.scene.start("FinalBossScene", { score: this.player.score });
     });
 
     this.physics.add.collider(this.player, this.platforms);
@@ -276,39 +306,7 @@ class MainScene extends Phaser.Scene {
       }
     );
 
-    this.anims.create({
-      key: "leftR",
-      frames: this.anims.generateFrameNumbers("rick", { start: 0, end: 3 }),
-      frameRate: 10,
-      repeat: -1,
-    });
-
-    this.anims.create({
-      key: "turn",
-      frames: [{ key: "rick", frame: 4 }],
-      frameRate: 20,
-    });
-
-    this.anims.create({
-      key: "rightR",
-      frames: this.anims.generateFrameNumbers("rick", { start: 5, end: 8 }),
-      frameRate: 10,
-      repeat: -1,
-    });
-
-    this.anims.create({
-      key: "leftM",
-      frames: this.anims.generateFrameNumbers("morty", { start: 0, end: 3 }),
-      frameRate: 10,
-      repeat: -1,
-    });
-
-    this.anims.create({
-      key: "rightM",
-      frames: this.anims.generateFrameNumbers("morty", { start: 5, end: 8 }),
-      frameRate: 10,
-      repeat: -1,
-    });
+    createAnimations("rick", this);
 
     this.cursors = this.input.keyboard.createCursorKeys();
 
@@ -353,32 +351,8 @@ class MainScene extends Phaser.Scene {
       }
     }
 
-    if (this.cursors.left.isDown) {
-      this.player.setVelocityX(-160);
-      this.player.anims.play("leftR", true);
-      if (this.shootKey.isDown) this.player.shoot("left");
-      if (this.cursors.shift.isDown) this.player.run("left");
-    } else if (this.cursors.right.isDown) {
-      this.player.setVelocityX(160);
-      this.player.anims.play("rightR", true);
-      if (this.cursors.shift.isDown) this.player.run("right");
-      if (this.shootKey.isDown) this.player.shoot("right");
-    } else {
-      this.player.setVelocityX(0);
-      this.player.anims.play("turn");
-    }
+    playerMovement(this.player, this.cursors, this.shootKey, "rick");
 
-    if (
-      this.cursors.up.isDown &&
-      (this.player.body.touching.down || this.player.body.blocked.down)
-    ) {
-      if (
-        this.cursors.up.isDown &&
-        (this.player.body.touching.down || this.player.body.blocked.down)
-      ) {
-        this.player.setVelocityY(-330);
-      }
-    }
     this.updateBackgroundPosition();
 
     this.enemies.children.iterate((enemy) => {
@@ -406,188 +380,220 @@ class FinalBossScene extends Phaser.Scene {
     super({ key: "FinalBossScene" });
   }
 
-  init(data) {
-    this.score = data.score || 0;
-  }
-
   preload() {
-    this.load.image("sky", "assets/sky.png");
     this.load.image("ground", "assets/platform.png");
     this.load.image("bullet", "assets/bullet.png");
-    this.load.image("fireBoss", "assets/fireBoss.png");
+    this.load.spritesheet("fireball", "assets/fireball.png", {
+      frameWidth: 57,
+      frameHeight: 57,
+    });
+    this.load.spritesheet("boss", "assets/boss.png", {
+      frameWidth: 105,
+      frameHeight: 112,
+    });
 
     this.load.spritesheet("rick", "assets/rick.png", {
       frameWidth: 40,
       frameHeight: 50,
     });
-
     this.load.spritesheet("morty", "assets/morty.png", {
-      frameWidth: 40,
-      frameHeight: 50,
-    });
-
-    this.load.spritesheet("boss", "assets/boss.png", {
       frameWidth: 40,
       frameHeight: 50,
     });
   }
 
   create() {
-    const screenWidth = this.sys.game.config.width;
-    const screenHeight = this.sys.game.config.height;
-
-    console.log(this.textures.list);
-
-    this.background = this.add
-      .image(0, 0, "sky")
-      .setOrigin(0, 0)
-      .setDisplaySize(screenWidth * 2, screenHeight);
-
+    // Definir los grupos y objetos
     this.platforms = this.physics.add.staticGroup();
-    this.platforms.create(400, 580, "ground").setScale(4).refreshBody();
+    this.platforms.create(400, 568, "ground").setScale(6).refreshBody();
 
-    this.player = this.physics.add.sprite(400, 500, "rick");
-    this.player.setCollideWorldBounds(true);
-    this.physics.add.collider(this.player, this.platforms);
+    // Crear jugador si no existe
+    if (!this.player) {
+      this.player = new Player(this, 100, 300, "rick", "Luis", 0);
+      createAnimations("rick", this);
+      this.physics.add.collider(this.player, this.platforms);
+    }
 
-    this.anims.create({
-      key: "leftR",
-      frames: this.anims.generateFrameNumbers("rick", { start: 0, end: 3 }),
-      frameRate: 10,
-      repeat: -1,
-    });
+    // Crear boss si no existe
+    if (!this.boss) {
+      this.boss = new FinalBoss(this, width, 400, "boss");
+      console.log(this.boss);
+      this.boss.setDepth(10);
+      this.physics.add.collider(this.boss, this.platforms);
+    }
 
-    this.anims.create({
-      key: "turn",
-      frames: [{ key: "rick", frame: 4 }],
-      frameRate: 20,
-    });
-
-    this.anims.create({
-      key: "rightR",
-      frames: this.anims.generateFrameNumbers("rick", { start: 5, end: 8 }),
-      frameRate: 10,
-      repeat: -1,
-    });
-
-    this.anims.create({
-      key: "leftM",
-      frames: this.anims.generateFrameNumbers("morty", { start: 0, end: 3 }),
-      frameRate: 10,
-      repeat: -1,
-    });
-
-    this.anims.create({
-      key: "rightM",
-      frames: this.anims.generateFrameNumbers("morty", { start: 5, end: 8 }),
-      frameRate: 10,
-      repeat: -1,
-    });
-
-    this.anims.create({
-      key: "leftB",
-      frames: this.anims.generateFrameNumbers("boss", { start: 0, end: 3 }),
-      frameRate: 10,
-      repeat: -1,
-    });
-
-    this.anims.create({
-      key: "rightB",
-      frames: this.anims.generateFrameNumbers("boss", { start: 5, end: 8 }),
-      frameRate: 10,
-      repeat: -1,
-    });
-
-    this.createAnimations();
-
-    this.boss = new FinalBoss(this, 200, 450, "boss");
-
-    this.events.emit("createAnimations");
-
-    this.bossProjectiles = this.physics.add.group();
-
-    this.physics.add.collider(this.player, this.platforms);
-    this.physics.add.collider(this.boss, this.platforms);
-
-    this.physics.add.overlap(
-      this.player,
-      this.bossProjectiles,
-      this.hitPlayer,
-      null,
-      this
-    );
-
-    this.time.addEvent({
-      delay: 3000,
-      callback: () => this.bossAttack(),
+    // Evento de ataque cada 3 segundos
+    this.attackEvent = this.time.addEvent({
+      delay: 2000,
+      callback: this.boss.attack,
+      callbackScope: this.boss,
       loop: true,
     });
+
+    this.cursors = this.input.keyboard.createCursorKeys();
+    this.shootKey = this.input.keyboard.addKey(
+      Phaser.Input.Keyboard.KeyCodes.X
+    );
   }
 
   update() {
-    if (this.boss) {
-      this.boss.update();
+    // Movement
+    if (this.boss && this.boss.body) {
+      this.boss.move();
     }
-  }
 
-  createAnimations() {
-    this.anims.create({
+    // Player movement
+    playerMovement(this.player, this.cursors, this.shootKey, "rick");
+
+    // Colliders
+    this.physics.add.collider(
+      this.player.bullets,
+      this.boss,
+      (boss, bullet) => {
+        boss.receiveDamage(1);
+        bullet.destroy();
+      }
+    );
+
+    this.physics.add.collider(
+      this.boss.fireballs,
+      this.player,
+      (player, fireball) => {
+        player.receiveDamage(1);
+        fireball.destroy();
+      }
+    );
+  }
+}
+
+function createAnimations(character, scene) {
+  if (character === "rick") {
+    scene.anims.create({
       key: "leftR",
-      frames: this.anims.generateFrameNumbers("rick", { start: 0, end: 3 }),
+      frames: scene.anims.generateFrameNumbers("rick", { start: 0, end: 3 }),
       frameRate: 10,
       repeat: -1,
     });
 
-    this.anims.create({
-      key: "turn",
+    scene.anims.create({
+      key: "turnR",
       frames: [{ key: "rick", frame: 4 }],
       frameRate: 20,
     });
 
-    this.anims.create({
+    scene.anims.create({
       key: "rightR",
-      frames: this.anims.generateFrameNumbers("rick", { start: 5, end: 8 }),
+      frames: scene.anims.generateFrameNumbers("rick", { start: 5, end: 8 }),
+      frameRate: 10,
+      repeat: -1,
+    });
+  } else {
+    scene.anims.create({
+      key: "leftM",
+      frames: scene.anims.generateFrameNumbers("morty", { start: 0, end: 3 }),
       frameRate: 10,
       repeat: -1,
     });
 
-    this.anims.create({
+    scene.anims.create({
+      key: "turnM",
+      frames: [{ key: "morty", frame: 4 }],
+      frameRate: 20,
+    });
+
+    scene.anims.create({
+      key: "rightM",
+      frames: scene.anims.generateFrameNumbers("morty", { start: 5, end: 8 }),
+      frameRate: 10,
+      repeat: -1,
+    });
+  }
+  if (scene.scene.key === "MainScene") {
+    scene.anims.create({
+      key: "leftE",
+      frames: scene.anims.generateFrameNumbers("enemy", { start: 0, end: 3 }),
+      frameRate: 10,
+      repeat: -1,
+    });
+
+    scene.anims.create({
+      key: "turnE",
+      frames: [{ key: "enemy", frame: 4 }],
+      frameRate: 20,
+    });
+
+    scene.anims.create({
+      key: "rightE",
+      frames: scene.anims.generateFrameNumbers("enemy", { start: 5, end: 8 }),
+      frameRate: 10,
+      repeat: -1,
+    });
+  } else if (scene.scene.key === "FinalBossScene") {
+    scene.anims.create({
       key: "leftB",
-      frames: this.anims.generateFrameNumbers("boss", { start: 0, end: 3 }),
+      frames: scene.anims.generateFrameNumbers("boss", { start: 0, end: 3 }),
       frameRate: 10,
       repeat: -1,
     });
 
-    this.anims.create({
-      key: "rightB",
-      frames: this.anims.generateFrameNumbers("boss", { start: 5, end: 8 }),
-      frameRate: 10,
-      repeat: -1,
-    });
-
-    this.anims.create({
+    scene.anims.create({
       key: "turnB",
       frames: [{ key: "boss", frame: 4 }],
       frameRate: 20,
     });
+
+    scene.anims.create({
+      key: "rightB",
+      frames: scene.anims.generateFrameNumbers("boss", { start: 5, end: 8 }),
+      frameRate: 10,
+      repeat: -1,
+    });
+
+    scene.anims.create({
+      key: "fireball",
+      frames: scene.anims.generateFrameNumbers("fireball", {
+        start: 0,
+        end: 3,
+      }),
+      frameRate: 10,
+      repeat: -1,
+    });
+  }
+}
+
+function playerMovement(player, cursors, shootKey, character) {
+  if (!player.lastDirection) {
+    player.lastDirection = "right";
+  }
+  let name = character === "rick" ? "R" : "M";
+
+  if (cursors.left.isDown) {
+    player.setVelocityX(-160);
+    player.anims.play(`left${name}`, true);
+    if (shootKey.isDown) {
+      player.shoot("left");
+    }
+    player.lastDirection = "left";
+  } else if (cursors.right.isDown) {
+    player.setVelocityX(160);
+    player.anims.play(`right${name}`, true);
+    if (shootKey.isDown) {
+      player.shoot("right");
+    }
+    player.lastDirection = "right";
+  } else {
+    player.setVelocityX(0);
+    if (!shootKey.isDown) {
+      player.anims.play(`turn${name}`);
+    }
   }
 
-  bossAttack() {
-    if (!this.boss.active) return;
-
-    const fireball = this.bossProjectiles.create(
-      this.boss.x,
-      this.boss.y,
-      "fireBoss"
-    );
-
-    fireball.setVelocityX(this.boss.x < this.player.x ? 200 : -200);
-    fireball.setGravityY(-300);
+  if (shootKey.isDown) {
+    player.shoot(player.lastDirection);
   }
 
-  hitPlayer(player, projectile) {
-    projectile.destroy();
-    console.log("¡El jugador ha sido golpeado!");
+  if (cursors.up.isDown && player.body.onFloor()) {
+    player.setVelocityY(-330);
   }
 }
 
