@@ -236,7 +236,7 @@ class MainScene extends Phaser.Scene {
 
   preload() {
     this.load.image("sky", "assets/sky.gif");
-    this.load.image("ground", "assets/platform.png");
+    this.load.image("ground", "assets/platform.jpg");
     this.load.image("bullet", "assets/bullet.png");
     this.load.spritesheet("enemy", "assets/enemigo.png", {
       frameWidth: 40,
@@ -381,7 +381,7 @@ class FinalBossScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image("ground", "assets/platform.png");
+    this.load.image("ground", "assets/platform.jpg");
     this.load.image("bullet", "assets/bullet.png");
     this.load.spritesheet("fireball", "assets/fireball.png", {
       frameWidth: 57,
