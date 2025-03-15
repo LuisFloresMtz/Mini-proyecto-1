@@ -611,7 +611,7 @@ class MainScene extends Phaser.Scene {
 
     if (this.nextStage) {
       this.level1Music.stop();
-      return this.scene.start("Scene2", {
+      this.scene.start("Scene2", {
         score: this.score,
         player: this.player,
         lifes: this.player.lifes,
@@ -679,7 +679,6 @@ class Scene2 extends Phaser.Scene {
     this.gameOver = false;
     this.score = data.score;
     this.lifes = data.lifes;
-    console.log(data);
   }
 
   preload() {
@@ -705,11 +704,19 @@ class Scene2 extends Phaser.Scene {
   create() {
     //--------------------------------FONDO------------------------------
     this.add
-      .image(0, 0, "sky")
-      .setOrigin(0, 0)
-      .setScale(this.levelWidth / 800, height / 342);
+    .image(0, 0, "sky")
+    .setOrigin(0, 0)
+    .setScale(this.levelWidth / 800, height / 342);
     //.setScrollFactor(0);
-
+    
+    //--------------------------PUNTUACIÓN-----------------------------------
+    console.log("score: " + this.score);
+    this.scoreText = this.add
+      .text(16, 16, "Score: " + this.score, {
+        fontSize: "32px",
+        fill: "#FFFF",
+      })
+      .setScrollFactor(0);
     //Limites de mundo
     this.physics.world.setBounds(0, 0, this.levelWidth, height);
 
@@ -765,14 +772,6 @@ class Scene2 extends Phaser.Scene {
       Phaser.Input.Keyboard.KeyCodes.ESC
     );
 
-    //--------------------------PUNTUACIÓN-----------------------------------
-    console.log("score: " + this.score);
-    this.scoreText = this.add
-      .text(16, 16, "Score: " + this.score, {
-        fontSize: "32px",
-        fill: "#FFFF",
-      })
-      .setScrollFactor(0);
 
     //-------------------------------PLATAFORMAS--------------------------------
     this.platforms = this.physics.add.staticGroup();
