@@ -34,8 +34,8 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     this.scene.scoreText.setText("Score: " + this.scene.score);
     this.scene.timerText.destroy();
     if (this.scene.score >= 500){
+      if(this.scene.clockSFX.isPlaying) this.scene.clockSFX.stop();
       this.scene.nextStage = true;
-      this.scene.clockSFX.stop();
     } 
   }
   
@@ -55,11 +55,11 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     this.scene.scoreText.setText("Score: " + this.scene.score);
     this.itemCounter++;
     if (this.scene.score >= 500) {
+      if(this.scene.clockSFX.isPlaying) this.scene.clockSFX.stop();
       this.scene.nextStage = true;
-      this.scene.clockSFX.stop();
     }
     //Aparicion del item especial una vez agarró 10 items normales
-    if (this.itemCounter == 10) {
+    if (this.itemCounter == 8) {
       this.itemCounter = 0;
       let item =
         this.scene.specials.children.entries[Phaser.Math.Between(0, 1)];
@@ -812,7 +812,7 @@ class Scene2 extends Phaser.Scene {
     this.date = selectedPlayer.date;
     const spacing = width / 5;
 
-    this.levelText = this.add.text(spacing * 1, 16, "Level 1", {
+    this.levelText = this.add.text(spacing * 1, 16, "Level 2", {
         fontSize: "32px",
         fill: "#FFFF",
     }).setOrigin(0.5, 0).setScrollFactor(0);
@@ -1298,6 +1298,50 @@ class FinalBossScene extends Phaser.Scene {
       (boss, bullet) => {
         boss.receiveDamage(1);
         if (this.boss.health <= 0) {
+          try {
+        
+            // Recuperar el jugador actual de localStorage (en caso de que this.player.nombre esté nulo)
+            let storedPlayer = localStorage.getItem("selectedPlayer");
+            storedPlayer = storedPlayer ? JSON.parse(storedPlayer) : {};
+    
+            const alias = storedPlayer.alias;
+            const now = new Date().toLocaleDateString();
+    
+            // Actualizar el objeto del jugador actual (clave "selectedPlayer")
+            let selectedPlayer = localStorage.getItem("selectedPlayer");
+            selectedPlayer = selectedPlayer
+              ? JSON.parse(selectedPlayer)
+              : { alias, score: 0, date: "" };
+    
+            if (this.score > selectedPlayer.score) {
+              selectedPlayer.score = this.score;
+              selectedPlayer.date = now;
+              localStorage.setItem(
+                "selectedPlayer",
+                JSON.stringify(selectedPlayer)
+              );
+            }
+    
+            // Actualizar el arreglo global de registros ("records")
+            let records = localStorage.getItem("records");
+            records = records ? JSON.parse(records) : [];
+    
+            const index = records.findIndex((rec) => rec.alias === alias);
+            if (index === -1) {
+              // Si no existe, agregarlo
+              records.push({ alias, score: this.score, date: now });
+            } else {
+              // Si existe, actualizar solo si el puntaje es mayor
+              if (this.score > records[index].score) {
+                records[index].score = this.score;
+                records[index].date = now;
+              }
+            }
+            localStorage.setItem("records", JSON.stringify(records));
+          } catch (error) {
+            console.error("Error al actualizar registros:", error);
+          }
+          
           this.bossMusic.stop();
           this.score += 500;
           window.location.href = "felicitacion.html";
@@ -1568,7 +1612,7 @@ const config = {
     default: "arcade",
     arcade: {
       gravity: { y: 300 },
-      debug: true,
+      debug: false,
     },
   },
   //scene: [FinalBossScene]//
