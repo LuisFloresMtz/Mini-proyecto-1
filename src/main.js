@@ -307,7 +307,8 @@ class MainScene extends Phaser.Scene {
     });
     
     //---------------------------JUGADOR---------------------------------
-    this.player = new Player(this, width / 2, 450, "rick", "Luis", 0);
+    const alias = localStorage.getItem("selectedAlias");
+    this.player = new Player(this, width / 2, 450, "rick", alias, 0);
     this.cursors = this.input.keyboard.createCursorKeys();
 
     //---------------------------KEYBINDS------------------------------------
@@ -432,30 +433,49 @@ class MainScene extends Phaser.Scene {
   update() {
     if (this.gameOver) {
       try {
-        let scores = JSON.parse(localStorage.getItem("scores")) || [];
+        // Recuperar el jugador actual de localStorage (en caso de que this.player.nombre esté nulo)
+        let storedPlayer = localStorage.getItem("selectedPlayer");
+        storedPlayer = storedPlayer ? JSON.parse(storedPlayer) : {};
 
-        const existingScore = scores.find(
-          (entry) => entry.nombre === this.player.nombre
-        );
-
-        if (!existingScore) {
-          scores.push({ nombre: this.player.nombre, score: this.score });
-        } else if (this.score > existingScore.score) {
-          existingScore.score = this.score;
+        const alias = storedPlayer.alias;
+        const now = new Date().toLocaleDateString();
+    
+        // Actualizar el objeto del jugador actual (clave "selectedPlayer")
+        let selectedPlayer = localStorage.getItem("selectedPlayer");
+        selectedPlayer = selectedPlayer ? JSON.parse(selectedPlayer) : { alias, score: 0, date: "" };
+    
+        if (this.score > selectedPlayer.score) {
+          selectedPlayer.score = this.score;
+          selectedPlayer.date = now;
+          localStorage.setItem("selectedPlayer", JSON.stringify(selectedPlayer));
         }
-
-        scores.sort((a, b) => b.score - a.score);
-
-        localStorage.setItem("scores", JSON.stringify(scores));
+    
+        // Actualizar el arreglo global de registros ("records")
+        let records = localStorage.getItem("records");
+        records = records ? JSON.parse(records) : [];
+    
+        const index = records.findIndex(rec => rec.alias === alias);
+        if (index === -1) {
+          // Si no existe, agregarlo
+          records.push({ alias, score: this.score, date: now });
+        } else {
+          // Si existe, actualizar solo si el puntaje es mayor
+          if (this.score > records[index].score) {
+            records[index].score = this.score;
+            records[index].date = now;
+          }
+        }
+        localStorage.setItem("records", JSON.stringify(records));
       } catch (error) {
-        console.error("Error al guardar los puntajes:", error);
+        console.error("Error al actualizar registros:", error);
       }
-      console.log("Cambiando a GameOverScene");
       return this.scene.start("GameOverScene", {
         score: this.score,
         player: this.player,
       });
     }
+    
+        
 
     if(this.nextStage) {
       return this.scene.start("Scene2", {
@@ -571,7 +591,9 @@ class Scene2 extends Phaser.Scene {
 
     
     //--------------------------------JUGADOR---------------------------------
-    this.player = new Player(this, width / 2, 450, "rick", "Luis", 0);
+    // Recupera el alias seleccionado o usa 'Luis' como fallback
+    const alias = localStorage.getItem("selectedAlias");
+    this.player = new Player(this, width / 2, 450, "rick", alias, 0);
 
     //------------------------------CAMARA--------------------------------------
     this.cameras.main.setBounds(0, 0, this.levelWidth, height);
@@ -681,30 +703,48 @@ class Scene2 extends Phaser.Scene {
   update() {
     if (this.gameOver) {
       try {
-        let scores = JSON.parse(localStorage.getItem("scores")) || [];
-        
-        const existingScore = scores.find(
-          (entry) => entry.nombre === this.player.nombre
-        );
+      // Recuperar el jugador actual de localStorage (en caso de que this.player.nombre esté nulo)
+      let storedPlayer = localStorage.getItem("selectedPlayer");
+      storedPlayer = storedPlayer ? JSON.parse(storedPlayer) : {};
 
-        if (!existingScore) {
-          scores.push({ nombre: this.player.nombre, score: this.score });
-        } else if (this.score > existingScore.score) {
-          existingScore.score = this.score;
+      const alias = storedPlayer.alias;
+      const now = new Date().toLocaleDateString();
+    
+        // Actualizar el objeto del jugador actual (clave "selectedPlayer")
+        let selectedPlayer = localStorage.getItem("selectedPlayer");
+        selectedPlayer = selectedPlayer ? JSON.parse(selectedPlayer) : { alias, score: 0, date: "" };
+    
+        if (this.score > selectedPlayer.score) {
+          selectedPlayer.score = this.score;
+          selectedPlayer.date = now;
+          localStorage.setItem("selectedPlayer", JSON.stringify(selectedPlayer));
         }
-        
-        scores.sort((a, b) => b.score - a.score);
-        
-        localStorage.setItem("scores", JSON.stringify(scores));
+    
+        // Actualizar el arreglo global de registros ("records")
+        let records = localStorage.getItem("records");
+        records = records ? JSON.parse(records) : [];
+    
+        const index = records.findIndex(rec => rec.alias === alias);
+        if (index === -1) {
+          // Si no existe, agregarlo
+          records.push({ alias, score: this.score, date: now });
+        } else {
+          // Si existe, actualizar solo si el puntaje es mayor
+          if (this.score > records[index].score) {
+            records[index].score = this.score;
+            records[index].date = now;
+          }
+        }
+        localStorage.setItem("records", JSON.stringify(records));
       } catch (error) {
-        console.error("Error al guardar los puntajes:", error);
+        console.error("Error al actualizar registros:", error);
       }
-      console.log("Cambiando a GameOverScene");
       return this.scene.start("GameOverScene", {
         score: this.score,
         player: this.player,
       });
-    }
+    }    
+    
     
     if(this.nextStage) {
       return this.scene.start("FinalBossScene", {
@@ -845,30 +885,48 @@ class FinalBossScene extends Phaser.Scene {
   update() {
     if (this.gameOver) {
       try {
-        let scores = JSON.parse(localStorage.getItem("scores")) || [];
+      // Recuperar el jugador actual de localStorage (en caso de que this.player.nombre esté nulo)
+      let storedPlayer = localStorage.getItem("selectedPlayer");
+      storedPlayer = storedPlayer ? JSON.parse(storedPlayer) : {};
 
-        const existingScore = scores.find(
-          (entry) => entry.nombre === this.player.nombre
-        );
-
-        if (!existingScore) {
-          scores.push({ nombre: this.player.nombre, score: this.score });
-        } else if (this.score > existingScore.score) {
-          existingScore.score = this.score;
+        const alias = storedPlayer.alias;
+        const now = new Date().toLocaleDateString();
+    
+        // Actualizar el objeto del jugador actual (clave "selectedPlayer")
+        let selectedPlayer = localStorage.getItem("selectedPlayer");
+        selectedPlayer = selectedPlayer ? JSON.parse(selectedPlayer) : { alias, score: 0, date: "" };
+    
+        if (this.score > selectedPlayer.score) {
+          selectedPlayer.score = this.score;
+          selectedPlayer.date = now;
+          localStorage.setItem("selectedPlayer", JSON.stringify(selectedPlayer));
         }
-
-        scores.sort((a, b) => b.score - a.score);
-
-        localStorage.setItem("scores", JSON.stringify(scores));
+    
+        // Actualizar el arreglo global de registros ("records")
+        let records = localStorage.getItem("records");
+        records = records ? JSON.parse(records) : [];
+    
+        const index = records.findIndex(rec => rec.alias === alias);
+        if (index === -1) {
+          // Si no existe, agregarlo
+          records.push({ alias, score: this.score, date: now });
+        } else {
+          // Si existe, actualizar solo si el puntaje es mayor
+          if (this.score > records[index].score) {
+            records[index].score = this.score;
+            records[index].date = now;
+          }
+        }
+        localStorage.setItem("records", JSON.stringify(records));
       } catch (error) {
-        console.error("Error al guardar los puntajes:", error);
+        console.error("Error al actualizar registros:", error);
       }
-      console.log("Cambiando a GameOverScene");
       return this.scene.start("GameOverScene", {
         score: this.score,
         player: this.player,
       });
-    }
+    }       
+    
 
     if(this.nextStage) {
       return this.scene.start("FinalBossScene", {
