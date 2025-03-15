@@ -1,29 +1,26 @@
-/* Variables CSS */
-:root {
-  --felicitacion-bg-overlay: rgba(0, 0, 0, 0.7);
-}
-
 /* Reset básico y fuente */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
     font-family: 'Press Start 2P', sans-serif;
-}
+  }
   
-body {
+  body {
     overflow: hidden;
-}
+  }
   
-.screen.fullscreen {
+  /* Pantalla fullscreen con fondo degradado */
+  .screen.fullscreen {
     width: 100%;
     height: 100vh;
     position: relative;
     background: linear-gradient(135deg, #2a0134, #1b0e2e);
     overflow: hidden;
-}
+  }
   
-#felicitacion-canvas {
+  /* Canvas de fondo para partículas */
+  #felicitacion-canvas {
     position: absolute;
     top: 0;
     left: 0;
@@ -31,41 +28,46 @@ body {
     height: 100%;
     z-index: 1;
     background: linear-gradient(135deg, #2a0134, #1b0e2e);
-}
+  }
   
-#felicitacion-content {
+  /* Contenedor principal del mensaje */
+  #felicitacion-content {
     position: relative;
     z-index: 10;
     max-width: 600px;
     margin: 0 auto;
     text-align: center;
     padding: 40px;
-    background: var(--felicitacion-bg-overlay);
+    background: rgba(0, 0, 0, 0.7);
     border: 4px double #ff6700;
     border-radius: 15px;
     box-shadow: 0 0 10px #ff6700;
     color: #ffdd33;
-}
+  }
   
-#congrats-title {
+  /* Título */
+  #congrats-title {
     font-size: 42px;
     color: #ff8c00;
     margin-bottom: 20px;
     text-shadow: 0 0 8px #ff6700;
-}
+  }
   
-#congrats-message {
+  /* Mensaje (incluye el puntaje) */
+  #congrats-message {
     font-size: 24px;
     margin-bottom: 30px;
     color: #ffdd33;
     text-shadow: 0 0 5px #ff8c00;
-}
+  }
   
-#celebration-animation {
+  /* Contenedor para animación Lottie */
+  #celebration-animation {
     margin: 20px auto;
-}
+  }
   
-#return-menu-btn {
+  /* Botón para regresar al menú */
+  #return-menu-btn {
     background: #ff8c00;
     border: 2px solid #ff6700;
     color: #000;
@@ -74,13 +76,13 @@ body {
     cursor: pointer;
     border-radius: 10px;
     transition: transform 0.3s, background 0.3s;
-}
-#return-menu-btn:hover {
+  }
+  #return-menu-btn:hover {
     transform: scale(1.05);
     background: #ff6700;
-}
+  }
 
-dotlottie-player {
+  lottie-player {
     display: block;
     margin: 20px auto;
-}
+  }
