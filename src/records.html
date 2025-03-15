@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Records - Mi Videojuego</title>
+  <!-- Fuente retro -->
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/records.css">
+  <!-- GSAP y ScrollTrigger (si se desean más animaciones) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.1/gsap.min.js"></script>
+  <script src="js/records.js" defer></script>
+</head>
+<body>
+  <div id="records-container" class="screen">
+    <!-- Canvas de fondo animado -->
+    <canvas id="records-canvas"></canvas>
+    
+    <!-- Contenedor principal de contenido -->
+    <div id="records-content">
+      <h1>Records de Jugadores</h1>
+      <table id="records-table">
+        <thead>
+          <tr>
+            <th>Alias</th>
+            <th>Puntuación</th>
+            <th>Fecha</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Filas generadas dinámicamente -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>
