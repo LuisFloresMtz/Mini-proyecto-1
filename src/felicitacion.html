@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>¡Felicidades! - Mi Videojuego</title>
+  <!-- Fuente retro -->
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <!-- GSAP -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.1/gsap.min.js"></script>
+  <!-- Lottie Player -->
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/felicitacion.css">
+  <!-- JS -->
+  <script src="js/felicitacion.js" defer></script>
+</head>
+<body>
+  <div id="felicitacion-container" class="screen fullscreen">
+    <!-- Canvas para fondo animado con partículas -->
+    <canvas id="felicitacion-canvas"></canvas>
+
+    <!-- Contenedor principal para el mensaje de felicitación -->
+    <div id="felicitacion-content">
+      <h1 id="congrats-title">¡Felicidades, Jugador!</h1>
+      <p id="congrats-message">Has ganado la partida con un puntaje de 0.</p>
+      <!-- Animación Lottie celebratoria -->
+      <div id="celebration-animation">
+        <lottie-player 
+          src="https://assets7.lottiefiles.com/packages/lf20_touohxv0.json"  
+          background="transparent"  
+          speed="1"  
+          style="width:200px; height:200px;"  
+          loop  
+          autoplay>
+        </lottie-player>
+      </div>
+      <button id="return-menu-btn">Regresar al Menú Principal</button>
+    </div>
+  </div>
+</body>
+</html>
