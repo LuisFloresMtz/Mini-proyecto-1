@@ -947,14 +947,14 @@ class Scene2 extends Phaser.Scene {
     );
     //---------------------BOTON MUSICA---------------
     document.getElementById("mute").addEventListener("click", () => {
-      if (this.level1Music.isPlaying) {
-          this.level1Music.pause();
+      if (this.level2Music.isPlaying) {
+          this.level2Music.pause();
           document.getElementById("mute").innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2.5">
               <path d="M6 15h-2a1 1 0 0 1 -1 -1v-4a1 1 0 0 1 1 -1h2l3.5 -4.5a.8 .8 0 0 1 1.5 .5v14a.8 .8 0 0 1 -1.5 .5l-3.5 -4.5"></path>
               <path d="M16 10l4 4m0 -4l-4 4"></path>
             </svg>`
       } else {
-          this.level1Music.resume();
+          this.level2Music.resume();
           document.getElementById("mute").innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2.5">
             <path d="M15 8a5 5 0 0 1 0 8"></path>
             <path d="M6 15h-2a1 1 0 0 1 -1 -1v-4a1 1 0 0 1 1 -1h2l3.5 -4.5a.8 .8 0 0 1 1.5 .5v14a.8 .8 0 0 1 -1.5 .5l-3.5 -4.5"></path>
@@ -1102,7 +1102,6 @@ class FinalBossScene extends Phaser.Scene {
     this.gameOver = false;
     this.score = data.score;
     this.lifes = data.lifes;
-    
   }
 
   preload() {
@@ -1207,6 +1206,21 @@ class FinalBossScene extends Phaser.Scene {
     this.pauseKey = this.input.keyboard.addKey(
       Phaser.Input.Keyboard.KeyCodes.ESC
     );
+    document.getElementById("mute").addEventListener("click", () => {
+      if (this.bossMusic.isPlaying) {
+          this.bossMusic.pause();
+          document.getElementById("mute").innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2.5">
+              <path d="M6 15h-2a1 1 0 0 1 -1 -1v-4a1 1 0 0 1 1 -1h2l3.5 -4.5a.8 .8 0 0 1 1.5 .5v14a.8 .8 0 0 1 -1.5 .5l-3.5 -4.5"></path>
+              <path d="M16 10l4 4m0 -4l-4 4"></path>
+            </svg>`
+      } else {
+          this.bossMusic.resume();
+          document.getElementById("mute").innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2.5">
+            <path d="M15 8a5 5 0 0 1 0 8"></path>
+            <path d="M6 15h-2a1 1 0 0 1 -1 -1v-4a1 1 0 0 1 1 -1h2l3.5 -4.5a.8 .8 0 0 1 1.5 .5v14a.8 .8 0 0 1 -1.5 .5l-3.5 -4.5"></path>
+          </svg>`
+      }
+    });
   }
 
   update() {
@@ -1361,21 +1375,6 @@ class GameOverScene extends Phaser.Scene {
 
     this.input.keyboard.once("keydown", () => {
       this.scene.start("MainScene", { reset: true });
-    });
-    document.getElementById("mute").addEventListener("click", () => {
-      if (this.level1Music.isPlaying) {
-          this.level1Music.pause();
-          document.getElementById("mute").innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2.5">
-              <path d="M6 15h-2a1 1 0 0 1 -1 -1v-4a1 1 0 0 1 1 -1h2l3.5 -4.5a.8 .8 0 0 1 1.5 .5v14a.8 .8 0 0 1 -1.5 .5l-3.5 -4.5"></path>
-              <path d="M16 10l4 4m0 -4l-4 4"></path>
-            </svg>`
-      } else {
-          this.level1Music.resume();
-          document.getElementById("mute").innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2.5">
-            <path d="M15 8a5 5 0 0 1 0 8"></path>
-            <path d="M6 15h-2a1 1 0 0 1 -1 -1v-4a1 1 0 0 1 1 -1h2l3.5 -4.5a.8 .8 0 0 1 1.5 .5v14a.8 .8 0 0 1 -1.5 .5l-3.5 -4.5"></path>
-          </svg>`
-      }
     });
   }
 }
