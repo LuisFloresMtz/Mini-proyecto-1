@@ -16,19 +16,21 @@
         <!-- Contenido principal -->
         <div id="records-content">
             <h1>Records del Laboratorio</h1>
-            <!-- Tabla de Records -->
-            <table id="records-table">
-                <thead>
-                    <tr>
-                        <th>Alias</th>
-                        <th>Score</th>
-                        <th>Fecha</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Se rellenará dinámicamente con JS -->
-                </tbody>
-            </table>
+            <!-- Contenedor con scroll para la tabla -->
+            <div id="table-container">
+                <table id="records-table">
+                    <thead>
+                        <tr>
+                            <th>Alias</th>
+                            <th>Score</th>
+                            <th>Fecha</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Se rellenará dinámicamente con JS -->
+                    </tbody>
+                </table>
+            </div>
             <!-- Botón para regresar al menú -->
             <div id="return-button-container">
                 <button id="return-menu-btn" onclick="window.location.href='menu.html'">Regresar al Menú</button>

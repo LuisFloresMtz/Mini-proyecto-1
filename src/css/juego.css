@@ -1,0 +1,18 @@
+#mute {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    width: 5%; 
+    height: auto;  
+    background-color: #00ff00; 
+    border: 1px solid black;
+    font-size: 16px;
+    cursor: pointer;
+    font-weight: bold;
+    border-radius: 10px;
+    
+}
+
+#mute:hover {
+    background-color: #00cc00; 
+}

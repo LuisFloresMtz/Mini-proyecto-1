@@ -22,6 +22,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     this.shooting = false;
     this.bullets = scene.physics.add.group();
     this.lastDirection = "right";
+    this.invinvible = false;
 
     // Ajustar tamaño del cuerpo del jugador si es necesario
     this.body.setSize(this.width * 0.8, this.height * 0.9);
@@ -32,15 +33,31 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     this.scene.score += 100;
     this.scene.scoreText.setText("Score: " + this.scene.score);
     this.scene.timerText.destroy();
-    if (this.scene.score >= 500) this.scene.nextStage = true;
+    if (this.scene.score >= 500){
+      this.scene.nextStage = true;
+      this.scene.clockSFX.stop();
+    } 
   }
+  
+  grantInvincibility() {
+    this.invincible = true; 
+
+    this.scene.time.delayedCall(2000, () => { 
+        this.invincible = false;
+    });
+}
+
+
 
   collectStar(star) {
     star.disableBody(true, true);
-    this.scene.score += 10;
+    this.scene.score += 20;
     this.scene.scoreText.setText("Score: " + this.scene.score);
     this.itemCounter++;
-    if (this.scene.score >= 20) this.scene.nextStage = true;
+    if (this.scene.score >= 500) {
+      this.scene.nextStage = true;
+      this.scene.clockSFX.stop();
+    }
     //Aparicion del item especial una vez agarró 10 items normales
     if (this.itemCounter == 10) {
       this.itemCounter = 0;
@@ -49,11 +66,20 @@ class Player extends Phaser.Physics.Arcade.Sprite {
       item.enableBody(true, item.x, item.y, true, true);
       //Aparece en pantalla contador para agarrar el especial
       let counter = 5;
-      let timerText = this.scene.add.text(300, 300, "5", {
+      let timerText = this.scene.add.text(width / 2, height * .2 , "5", {
         fontSize: "32px",
         fill: "#ffffff",
-      });
+      }).setOrigin(0.5, 0.5);
       this.scene.timerText = timerText;
+      this.scene.timerSprite.enableBody(true, this.scene.timerSprite.x, this.scene.timerSprite.y, true, true);
+      //Agrega sfx
+      if (!this.scene.clockSFX) {
+        this.scene.clockSFX = this.scene.sound.add("clock-sfx", { loop: true });
+        this.scene.clockSFX.setVolume(0.25);
+        this.scene.clockSFX.play();
+      } else {
+        this.scene.clockSFX.play();
+      }
       //Agrega un temporizador para obtener el objeto
       this.scene.time.addEvent({
         delay: 1000,
@@ -66,6 +92,10 @@ class Player extends Phaser.Physics.Arcade.Sprite {
 
       setTimeout(() => {
         item.disableBody(true, true);
+        this.scene.timerSprite.disableBody(true,true);
+        if(this.scene.clockSFX){
+          this.scene.clockSFX.stop();
+        } 
         timerText.destroy();
       }, 6000);
     }
@@ -100,18 +130,21 @@ class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   takeDamage() {
-    this.scene.physics.pause();
-    this.setTint(0xff0000);
-    this.anims.play("turnR");
-    this.lifes--;
-    this.scene.drawHearts(this.lifes);
-    if (this.lifes == 0) {
-      this.scene.gameOver = true;
+    if(!this.invincible) {
+      this.scene.physics.pause();
+      this.setTint(0xff0000);
+      this.anims.play("turnR");
+      this.lifes--;
+      this.scene.drawHearts(this.lifes);
+      if (this.lifes == 0) {
+        this.scene.gameOver = true;
+      }
+      setTimeout(() => {
+        this.clearTint();
+        this.scene.physics.resume();
+      }, 250);
+      this.grantInvincibility();
     }
-    setTimeout(() => {
-      this.clearTint();
-      this.scene.physics.resume();
-    }, 250);
   }
 
   run(side) {
@@ -237,38 +270,38 @@ class FinalBoss extends Phaser.Physics.Arcade.Sprite {
     });
   }
 
-  create() {
-    // Definir los grupos y objetos
-    this.platforms = this.physics.add.staticGroup();
-    this.platforms.create(400, 568, "ground").setScale(6).refreshBody();
+  // create() {
+  //   // Definir los grupos y objetos
+  //   this.platforms = this.physics.add.staticGroup();
+  //   this.platforms.create(400, 568, "ground").setScale(6).refreshBody();
 
-    // Crear jugador si no existe
-    if (!this.player) {
-      this.player = new Player(this, 100, 300, "rick", "Luis", 0);
-      createAnimations("rick", this);
-      this.physics.add.collider(this.player, this.platforms);
-    }
-    // Crear boss si no existe
-    if (!this.boss) {
-      this.boss = new FinalBoss(this, width, 400, "boss");
-      console.log(this.boss);
-      this.boss.setDepth(10);
-      this.physics.add.collider(this.boss, this.platforms);
-    }
+  //   // Crear jugador si no existe
+  //   // if (!this.player) {
+  //   //   this.player = new Player(this, 100, 300, "rick", "Luis", 0);
+  //   //   createAnimations("rick", this);
+  //   //   this.physics.add.collider(this.player, this.platforms);
+  //   // }
+  //   // Crear boss si no existe
+  //   if (!this.boss) {
+  //     this.boss = new FinalBoss(this, width, 400, "boss");
+  //     console.log(this.boss);
+  //     this.boss.setDepth(10);
+  //     this.physics.add.collider(this.boss, this.platforms);
+  //   }
 
-    // Evento de ataque cada 3 segundos
-    this.attackEvent = this.time.addEvent({
-      delay: 2000,
-      callback: this.boss.attack,
-      callbackScope: this.boss,
-      loop: true,
-    });
+  //   // Evento de ataque cada 3 segundos
+  //   this.attackEvent = this.time.addEvent({
+  //     delay: 2000,
+  //     callback: this.boss.attack,
+  //     callbackScope: this.boss,
+  //     loop: true,
+  //   });
 
-    this.cursors = this.input.keyboard.createCursorKeys();
-    this.shootKey = this.input.keyboard.addKey(
-      Phaser.Input.Keyboard.KeyCodes.X
-    );
-  }
+  //   this.cursors = this.input.keyboard.createCursorKeys();
+  //   this.shootKey = this.input.keyboard.addKey(
+  //     Phaser.Input.Keyboard.KeyCodes.X
+  //   );
+  // }
 
   receiveDamage(damage) {
     console.log(this);
@@ -300,6 +333,7 @@ class FinalBoss extends Phaser.Physics.Arcade.Sprite {
 
     // Desactivar la gravedad de la bala
     fireball.body.allowGravity = false;
+    fireball.setTint(0x00ff00);
 
     // Aplicar la velocidad en la dirección del jugador
     fireball.setVelocityX(velocityX * 500); // 200 es la velocidad, puedes ajustarlo
@@ -335,6 +369,8 @@ class MainScene extends Phaser.Scene {
     super({ key: "MainScene" });
     this.score = 0;
     this.pause = false;
+    this.skin = localStorage.getItem("selectedCharacter");
+    console.log(this.skin)
   }
 
   init(data) {
@@ -347,6 +383,7 @@ class MainScene extends Phaser.Scene {
 
   preload() {
     this.load.audio("level1-music", "assets/music/level1-music.mp3");
+    this.load.audio("clock-sfx", "assets/music/clockSFX-music.mp3");
     this.load.image("background", "assets/labBG.png");
     this.load.image("ground", "assets/platform2.png");
     this.load.image("bullet", "assets/bullet.png");
@@ -354,7 +391,12 @@ class MainScene extends Phaser.Scene {
     this.load.image("rat", "assets/rat.png");
     this.load.image("lava", "assets/lava.png");
     this.load.image("special", "assets/special.png");
+    this.load.image("reloj", "assets/reloj.png");
     this.load.spritesheet("rick", "assets/rick.png", {
+      frameWidth: 40,
+      frameHeight: 50,
+    });
+    this.load.spritesheet("morty", "assets/morty.png", {
       frameWidth: 40,
       frameHeight: 50,
     });
@@ -435,7 +477,10 @@ class MainScene extends Phaser.Scene {
     });
 
     //---------------------------JUGADOR---------------------------------
-    this.player = new Player(this, width / 2, height / 2, "rick", "Yo", 0);
+    this.player = new Player(this, width/2, height/2, this.skin, "Luis", this.score);
+      if (this.skin === "morty") {
+        this.player.setScale(1.3);
+      }
     this.cursors = this.input.keyboard.createCursorKeys();
 
     //---------------------------KEYBINDS------------------------------------
@@ -447,13 +492,35 @@ class MainScene extends Phaser.Scene {
     );
 
     //--------------------------PUNTUACIÓN-----------------------------------
-    this.scoreText = this.add.text(16, 16, "Score: 0", {
-      fontSize: "32px",
-      fill: "#FFFF",
-    });
+    let selectedPlayer = JSON.parse(localStorage.getItem("selectedPlayer"));
+    console.log(selectedPlayer)
+    this.alias = selectedPlayer.alias;
+    console.log(this.alias)
+    this.date = selectedPlayer.date;
+    const spacing = width / 5;
+
+    this.levelText = this.add.text(spacing * 1, 16, "Level 1", {
+        fontSize: "32px",
+        fill: "#FFFF",
+    }).setOrigin(0.5, 0);
+
+    this.aliasText = this.add.text(spacing * 2, 16, "Nombre: " + this.alias, {
+        fontSize: "32px",
+        fill: "#FFFF",
+    }).setOrigin(0.5, 0);
+
+    this.scoreText = this.add.text(spacing * 3, 16, "Score: 0", {
+        fontSize: "32px",
+        fill: "#FFFF",
+    }).setOrigin(0.5, 0);
+
+    this.dateText = this.add.text(spacing * 4, 16, "Fecha: " + this.date, {
+        fontSize: "32px",
+        fill: "#FFFF",
+    }).setOrigin(0.5, 0);
 
     //-----------------------------------ANIMACIONES----------------------------------
-    createAnimations("rick", this);
+    createAnimations(this.skin, this);
 
     //-------------------------------CONSUMIBLES---------------------------------
     this.stars = this.physics.add.group({
@@ -483,14 +550,29 @@ class MainScene extends Phaser.Scene {
     this.specials.children.iterate((child) => {
       child.disableBody(true, true);
       this.tweens.add({
-        targets: child, // Reemplaza "this.item" con tu objeto
-        scaleX: 0.1, // Aumenta un poco el tamaño en X
-        scaleY: 0.1, // Aumenta un poco el tamaño en Y
-        duration: 500, // Tiempo en milisegundos (medio segundo)
-        yoyo: true, // Hace que la animación vuelva al tamaño original
-        repeat: -1, // Se repite infinitamente
-        ease: "Sine.easeInOut", // Suaviza el efecto
+        targets: child, 
+        scaleX: 0.1,
+        scaleY: 0.1,
+        duration: 500,
+        yoyo: true,
+        repeat: -1,
+        ease: "Sine.easeInOut",
       });
+    });
+    //Para el sprite de reloj
+    this.timerSprite = this.physics.add.staticSprite(width / 2, height * .1, "reloj")
+        .setOrigin(0.5, 0.5)
+        .setScale(0.15, 0.15)
+        .disableBody(true,true)
+        .refreshBody();
+    this.tweens.add({
+      targets: this.timerSprite, 
+      scaleX: 0.2,
+      scaleY: 0.2,
+      duration: 500,
+      yoyo: true,
+      repeat: -1,
+      ease: "Sine.easeInOut",
     });
 
     //------------------------------BOMBAS------------------------------
@@ -543,6 +625,22 @@ class MainScene extends Phaser.Scene {
       null,
       this
     );
+    //---------------------BOTON MUSICA---------------
+    document.getElementById("mute").addEventListener("click", () => {
+      if (this.level1Music.isPlaying) {
+          this.level1Music.pause();
+          document.getElementById("mute").innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2.5">
+              <path d="M6 15h-2a1 1 0 0 1 -1 -1v-4a1 1 0 0 1 1 -1h2l3.5 -4.5a.8 .8 0 0 1 1.5 .5v14a.8 .8 0 0 1 -1.5 .5l-3.5 -4.5"></path>
+              <path d="M16 10l4 4m0 -4l-4 4"></path>
+            </svg>`
+      } else {
+          this.level1Music.resume();
+          document.getElementById("mute").innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2.5">
+            <path d="M15 8a5 5 0 0 1 0 8"></path>
+            <path d="M6 15h-2a1 1 0 0 1 -1 -1v-4a1 1 0 0 1 1 -1h2l3.5 -4.5a.8 .8 0 0 1 1.5 .5v14a.8 .8 0 0 1 -1.5 .5l-3.5 -4.5"></path>
+          </svg>`
+      }
+  });  
   }
 
   update() {
@@ -598,14 +696,10 @@ class MainScene extends Phaser.Scene {
       }
       console.log("Cambiando a GameOverScene");
       window.location.href = "gameover.html";
-      // return this.scene.start("GameOverScene", {
-      //   score: this.score,
-      //   player: this.player,
-      // });
     }
 
     if (Phaser.Input.Keyboard.JustDown(this.pauseKey)) {
-      this.scene.launch("PauseScene", { scene: this.scene.key });
+      this.scene.launch("PauseScene", { scene: this.scene.key, music: this.level1Music });
       this.scene.pause();
     }
 
@@ -618,7 +712,7 @@ class MainScene extends Phaser.Scene {
       });
     }
 
-    playerMovement(this.player, this.cursors, this.shootKey, "rick");
+    playerMovement(this.player, this.cursors, this.shootKey, this.skin);
   }
 
   drawHearts(count) {
@@ -661,6 +755,7 @@ class Scene2 extends Phaser.Scene {
   constructor() {
     super({ key: "Scene2" });
     this.levelWidth = width * 2;
+    this.skin = localStorage.getItem("selectedCharacter");
   }
 
   hitBullet(bullet, enemy) {
@@ -710,13 +805,32 @@ class Scene2 extends Phaser.Scene {
     //.setScrollFactor(0);
     
     //--------------------------PUNTUACIÓN-----------------------------------
-    console.log("score: " + this.score);
-    this.scoreText = this.add
-      .text(16, 16, "Score: " + this.score, {
+    let selectedPlayer = JSON.parse(localStorage.getItem("selectedPlayer"));
+    console.log(selectedPlayer)
+    this.alias = selectedPlayer.alias;
+    console.log(this.alias)
+    this.date = selectedPlayer.date;
+    const spacing = width / 5;
+
+    this.levelText = this.add.text(spacing * 1, 16, "Level 1", {
         fontSize: "32px",
         fill: "#FFFF",
-      })
-      .setScrollFactor(0);
+    }).setOrigin(0.5, 0).setScrollFactor(0);
+
+    this.aliasText = this.add.text(spacing * 2, 16, "Nombre: " + this.alias, {
+        fontSize: "32px",
+        fill: "#FFFF",
+    }).setOrigin(0.5, 0).setScrollFactor(0);
+
+    this.scoreText = this.add.text(spacing * 3, 16, "Score: " + this.score, {
+        fontSize: "32px",
+        fill: "#FFFF",
+    }).setOrigin(0.5, 0).setScrollFactor(0);
+
+    this.dateText = this.add.text(spacing * 4, 16, "Fecha: " + this.date, {
+        fontSize: "32px",
+        fill: "#FFFF",
+    }).setOrigin(0.5, 0).setScrollFactor(0);
     //Limites de mundo
     this.physics.world.setBounds(0, 0, this.levelWidth, height);
 
@@ -724,19 +838,14 @@ class Scene2 extends Phaser.Scene {
     this.graphics = this.add.graphics().setScrollFactor(0);
     this.drawHearts(this.lifes);
 
-    //--------------------------------JUGADOR---------------------------------
-    this.player = new Player(this, width / 2, height / 2, "rick", "Yo", 0);
-    this.player.lifes = this.lifes;
-
-    //------------------------------CAMARA--------------------------------------
-    this.cameras.main.setBounds(0, 0, this.levelWidth, height);
-    this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
-
+    
+    
     //this.cameras.main.setDeadzone(0, 0);
     //this.cameras.main.centerToBounds();
-
+    
     //-------------------------------------ENEMIGOS---------------------------
     this.enemies = this.physics.add.group();
+    let aux = this.score;
     for (let i = 0; i < 50; i++) {
       let enemy = new Enemy(
         this,
@@ -748,18 +857,29 @@ class Scene2 extends Phaser.Scene {
       this.enemies.add(enemy);
       enemy.body.enable = false;
     }
-
     this.spawnEnemies();
 
+    this.score = aux;
+    
     this.enemies.children.iterate((enemy) => {
       if (enemy) {
         enemy.setCollideWorldBounds(true);
         enemy.setVelocityX(Phaser.Math.Between(-200, 200));
       }
     });
-
+    //--------------------------------JUGADOR---------------------------------
+    this.player = new Player(this, width / 2, height / 2, this.skin, "Luis", this.score);
+      if (this.skin === "morty") {
+        this.player.setScale(1.3);
+      }
+    this.player.lifes = this.lifes;
+    this.player.score = this.score;
+    //------------------------------CAMARA--------------------------------------
+    this.cameras.main.setBounds(0, 0, this.levelWidth, height);
+    this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
+    
     //-----------------------------------ANIMACIONES----------------------------------
-    createAnimations("rick", this);
+    createAnimations(this.skin, this);
     createAnimations("enemy", this);
 
     //----------------------------KEYBINDS-------------------------------
@@ -825,10 +945,26 @@ class Scene2 extends Phaser.Scene {
       null,
       this
     );
+    //---------------------BOTON MUSICA---------------
+    document.getElementById("mute").addEventListener("click", () => {
+      if (this.level1Music.isPlaying) {
+          this.level1Music.pause();
+          document.getElementById("mute").innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2.5">
+              <path d="M6 15h-2a1 1 0 0 1 -1 -1v-4a1 1 0 0 1 1 -1h2l3.5 -4.5a.8 .8 0 0 1 1.5 .5v14a.8 .8 0 0 1 -1.5 .5l-3.5 -4.5"></path>
+              <path d="M16 10l4 4m0 -4l-4 4"></path>
+            </svg>`
+      } else {
+          this.level1Music.resume();
+          document.getElementById("mute").innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2.5">
+            <path d="M15 8a5 5 0 0 1 0 8"></path>
+            <path d="M6 15h-2a1 1 0 0 1 -1 -1v-4a1 1 0 0 1 1 -1h2l3.5 -4.5a.8 .8 0 0 1 1.5 .5v14a.8 .8 0 0 1 -1.5 .5l-3.5 -4.5"></path>
+          </svg>`
+      }
+    });
   }
 
   update() {
-    playerMovement(this.player, this.cursors, this.shootKey, "rick");
+    playerMovement(this.player, this.cursors, this.shootKey, this.skin);
 
     // Reproducir la música de fondo
     if (!this.level2Music) {
@@ -888,11 +1024,11 @@ class Scene2 extends Phaser.Scene {
     }
 
     if (Phaser.Input.Keyboard.JustDown(this.pauseKey)) {
-      this.scene.launch("PauseScene", { scene: this.scene.key });
+      this.scene.launch("PauseScene", { scene: this.scene.key, music: this.level2Music });
       this.scene.pause();
     }
 
-    if (this.score >= 10) {
+    if (this.score >= 600) {
       this.nextStage = true;
     }
 
@@ -959,12 +1095,14 @@ class Scene2 extends Phaser.Scene {
 class FinalBossScene extends Phaser.Scene {
   constructor() {
     super({ key: "FinalBossScene" });
+    this.skin = localStorage.getItem("selectedCharacter");
   }
 
   init(data) {
     this.gameOver = false;
     this.score = data.score;
     this.lifes = data.lifes;
+    
   }
 
   preload() {
@@ -973,6 +1111,7 @@ class FinalBossScene extends Phaser.Scene {
 
     this.load.image("ground", "assets/platform.jpg");
     this.load.image("bullet", "assets/bullet.png");
+    this.load.image("background", "assets/bossBG.gif");
     this.load.spritesheet("fireball", "assets/fireball.png", {
       frameWidth: 57,
       frameHeight: 57,
@@ -993,12 +1132,39 @@ class FinalBossScene extends Phaser.Scene {
   }
 
   create() {
-    this.scoreText = this.add
-      .text(16, 16, "Score: " + this.score, {
+    this.background = this.add
+      .image(0, 0, "background")
+      .setOrigin(0, 0)
+      .setScale(width / 1440, height / 768)
+      .setTint(0x003300);
+
+    //--------------------------PUNTUACIÓN-----------------------------------
+    let selectedPlayer = JSON.parse(localStorage.getItem("selectedPlayer"));
+    console.log(selectedPlayer)
+    this.alias = selectedPlayer.alias;
+    console.log(this.alias)
+    this.date = selectedPlayer.date;
+    const spacing = width / 5;
+
+    this.levelText = this.add.text(spacing * 1, 16, "Final Boss", {
         fontSize: "32px",
         fill: "#FFFF",
-      })
-      .setScrollFactor(0);
+    }).setOrigin(0.5, 0);
+
+    this.aliasText = this.add.text(spacing * 2, 16, "Nombre: " + this.alias, {
+        fontSize: "32px",
+        fill: "#FFFF",
+    }).setOrigin(0.5, 0);
+
+    this.scoreText = this.add.text(spacing * 3, 16, "Score: "+ this.score, {
+        fontSize: "32px",
+        fill: "#FFFF",
+    }).setOrigin(0.5, 0);
+
+    this.dateText = this.add.text(spacing * 4, 16, "Fecha: " + this.date, {
+        fontSize: "32px",
+        fill: "#FFFF",
+    }).setOrigin(0.5, 0);
 
     this.graphics = this.add.graphics();
     this.drawHearts(this.lifes);
@@ -1009,8 +1175,11 @@ class FinalBossScene extends Phaser.Scene {
 
     // Crear jugador si no existe
     if (!this.player) {
-      this.player = new Player(this, 100, 300, "rick", "Luis", this.score);
-      createAnimations("rick", this);
+      this.player = new Player(this, width/2, height/2, this.skin, "Luis", this.score);
+      if (this.skin === "morty") {
+        this.player.setScale(1.3);
+      }
+      createAnimations(this.skin, this);
       this.physics.add.collider(this.player, this.platforms);
     }
 
@@ -1020,6 +1189,7 @@ class FinalBossScene extends Phaser.Scene {
       console.log(this.boss);
       this.boss.setDepth(10);
       this.physics.add.collider(this.boss, this.platforms);
+      this.boss.setTint(0x66ff33);
     }
 
     // Evento de ataque cada 3 segundos
@@ -1089,7 +1259,7 @@ class FinalBossScene extends Phaser.Scene {
     }
 
     if (Phaser.Input.Keyboard.JustDown(this.pauseKey)) {
-      this.scene.launch("PauseScene", { scene: this.scene.key });
+      this.scene.launch("PauseScene", { scene: this.scene.key, music: this.bossMusic});
       this.scene.pause();
     }
 
@@ -1105,7 +1275,7 @@ class FinalBossScene extends Phaser.Scene {
       this.boss.move();
     }
     // Player movement
-    playerMovement(this.player, this.cursors, this.shootKey, "rick");
+    playerMovement(this.player, this.cursors, this.shootKey, this.skin);
 
     // Colliders
     this.physics.add.collider(
@@ -1192,8 +1362,22 @@ class GameOverScene extends Phaser.Scene {
     this.input.keyboard.once("keydown", () => {
       this.scene.start("MainScene", { reset: true });
     });
+    document.getElementById("mute").addEventListener("click", () => {
+      if (this.level1Music.isPlaying) {
+          this.level1Music.pause();
+          document.getElementById("mute").innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2.5">
+              <path d="M6 15h-2a1 1 0 0 1 -1 -1v-4a1 1 0 0 1 1 -1h2l3.5 -4.5a.8 .8 0 0 1 1.5 .5v14a.8 .8 0 0 1 -1.5 .5l-3.5 -4.5"></path>
+              <path d="M16 10l4 4m0 -4l-4 4"></path>
+            </svg>`
+      } else {
+          this.level1Music.resume();
+          document.getElementById("mute").innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2.5">
+            <path d="M15 8a5 5 0 0 1 0 8"></path>
+            <path d="M6 15h-2a1 1 0 0 1 -1 -1v-4a1 1 0 0 1 1 -1h2l3.5 -4.5a.8 .8 0 0 1 1.5 .5v14a.8 .8 0 0 1 -1.5 .5l-3.5 -4.5"></path>
+          </svg>`
+      }
+    });
   }
-
 }
 
 class PauseScene extends Phaser.Scene {
@@ -1203,9 +1387,11 @@ class PauseScene extends Phaser.Scene {
 
   init(data) {
     this.gameScene = data.scene;
+    this.music = data.music;
   }
 
   create() {
+    this.music.pause();
     this.add
       .text(400, 200, "Juego Pausado", { fontSize: "32px", fill: "#fff" })
       .setOrigin(0.5);
@@ -1215,6 +1401,7 @@ class PauseScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setInteractive()
       .on("pointerdown", () => {
+        this.music.resume();
         this.scene.resume(this.gameScene);
         this.scene.stop();
       });
@@ -1224,8 +1411,9 @@ class PauseScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setInteractive()
       .on("pointerdown", () => {
+        this.music.stop();
+        window.location.href = "menu.html"; // Volver al menú
         this.scene.stop(this.gameScene);
-        this.scene.start("MenuScene"); // Volver al menú
       });
 
     this.pauseKey = this.input.keyboard.addKey(
@@ -1235,6 +1423,7 @@ class PauseScene extends Phaser.Scene {
 
   update() {
     if (Phaser.Input.Keyboard.JustDown(this.pauseKey)) {
+      this.music.resume();
       this.scene.resume(this.gameScene);
       this.scene.stop();
     }
@@ -1383,8 +1572,8 @@ const config = {
       debug: true,
     },
   },
-  //scene: [FinalBossScene]
+  //scene: [FinalBossScene]//
   scene: [MainScene, Scene2, GameOverScene, FinalBossScene, PauseScene],
-};
+}
 
 const game = new Phaser.Game(config);

@@ -75,7 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     animateParticles();
 
-    // Inicializar posición y velocidad para cada sujeto draggable
+    // Inicializar posición, velocidad y eventos en cada sujeto draggable
     subjects.forEach(subject => {
       subject.pos = {
         x: Math.random() * (container.clientWidth - subject.clientWidth),
@@ -86,11 +86,14 @@ document.addEventListener("DOMContentLoaded", () => {
         y: (Math.random() - 0.5) * 2
       };
       subject.dragging = false;
+      subject.style.position = "absolute";
       subject.style.left = `${subject.pos.x}px`;
       subject.style.top = `${subject.pos.y}px`;
+      subject.style.cursor = "grab";
       subject.addEventListener("pointerdown", onPointerDown);
     });
 
+    // Eventos para el arrastre de subjects
     function onPointerDown(e) {
       const subject = e.currentTarget;
       if (!subject) return;
@@ -112,7 +115,7 @@ document.addEventListener("DOMContentLoaded", () => {
       subject.pos.x = subject.initialPos.x + dx;
       subject.pos.y = subject.initialPos.y + dy;
       subject.style.left = `${subject.pos.x}px`;
-      subject.style.top = `${subject.pos.y}px`;
+      subject.style.top =` ${subject.pos.y}px`;
     }
 
     function onPointerUp(e) {
@@ -122,7 +125,7 @@ document.addEventListener("DOMContentLoaded", () => {
       subject.style.cursor = "grab";
       subject.removeEventListener("pointermove", onPointerMove);
       subject.removeEventListener("pointerup", onPointerUp);
-      
+
       const subjectRect = subject.getBoundingClientRect();
       dropZones.forEach(zone => {
         if (!zone) return;
@@ -133,13 +136,21 @@ document.addEventListener("DOMContentLoaded", () => {
           subjectRect.top + subjectRect.height / 2 > zoneRect.top &&
           subjectRect.top + subjectRect.height / 2 < zoneRect.bottom
         ) {
-          // Asegurarse de que ambos datasets existan
+          // Si los dataset concuerdan, el sujeto encaja en el drop zone
           if (subject.dataset && zone.dataset && subject.dataset.id === zone.dataset.target) {
             zone.classList.remove("incorrect");
             zone.classList.add("correct");
             gsap.to(subject, {
-              left: zoneRect.left + zoneRect.width / 2 - subject.clientWidth / 2 + "px",
-              top: zoneRect.top + zoneRect.height / 2 - subject.clientHeight / 2 + "px",
+              left:
+                zoneRect.left +
+                zoneRect.width / 2 -
+                subject.clientWidth / 2 +
+                "px",
+              top:
+                zoneRect.top +
+                zoneRect.height / 2 -
+                subject.clientHeight / 2 +
+                "px",
               duration: 0.5,
               ease: "back.out(1.7)"
             });
@@ -163,6 +174,34 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
     }
+
+    // Animación continua de los subjects: se mueven y, al chocar con el marco, rotan
+    function animateSubjects() {
+      subjects.forEach(subject => {
+        if (!subject.dragging) {
+          const containerWidth = container.clientWidth;
+          const containerHeight = container.clientHeight;
+          let newX = subject.pos.x + subject.vel.x;
+          let newY = subject.pos.y + subject.vel.y;
+
+          // Reversa de dirección si toca los bordes
+          if (newX < 0 || newX + subject.offsetWidth > containerWidth) {
+            subject.vel.x *= -1;
+            gsap.to(subject, { rotation: "+=360", duration: 0.5, ease: "power2.out" });
+          }
+          if (newY < 0 || newY + subject.offsetHeight > containerHeight) {
+            subject.vel.y *= -1;
+            gsap.to(subject, { rotation: "+=360", duration: 0.5, ease: "power2.out" });
+          }
+          subject.pos.x += subject.vel.x;
+          subject.pos.y += subject.vel.y;
+          subject.style.left = `${subject.pos.x}px`;
+          subject.style.top = `${subject.pos.y}px`;
+        }
+      });
+      requestAnimationFrame(animateSubjects);
+    }
+    animateSubjects();
 
     // Animaciones de entrada con GSAP
     gsap.from("#header-overlay", { opacity: 0, y: -50, duration: 1, ease: "power2.out" });
