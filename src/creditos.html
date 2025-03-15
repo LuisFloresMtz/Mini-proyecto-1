@@ -9,7 +9,10 @@
   <!-- GSAP -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.1/gsap.min.js"></script>
   <!-- Lottie Player -->
-  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+  <script
+  src="https://unpkg.com/@dotlottie/player-component@2.7.12/dist/dotlottie-player.mjs"
+  type="module"
+></script>
   <!-- Hoja de estilos -->
   <link rel="stylesheet" href="css/creditos.css" />
   <!-- Lógica JS -->
@@ -76,26 +79,26 @@
 
     <!-- Animación Lottie principal (monstruo mutante) -->
     <div id="monster-animation">
-      <lottie-player
+      <dotlottie-player
         src="https://lottie.host/93c02a34-dd32-4bd0-98c0-3fde437da56d/uO3lwxB8E8.json"
         background="transparent"
         speed="1"
         style="width: 150px; height: 150px;"
         loop
         autoplay
-      ></lottie-player>
+      ></dotlottie-player>
     </div>
 
     <!-- Animación Lottie complementaria (efecto glitch mutante) -->
     <div id="glitch-animation">
-      <lottie-player
+      <dotlottie-player
         src="https://lottie.host/181c61f9-9da6-425d-80ac-8b4a07b7f790/cLCgASHKn4.json"
         background="transparent"
         speed="1"
         style="width: 100px; height: 100px;"
         loop
         autoplay
-      ></lottie-player>
+      ></dotlottie-player>
     </div>
 
     <!-- Botón para regresar al menú principal -->

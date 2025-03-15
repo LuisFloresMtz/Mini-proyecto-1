@@ -87,7 +87,7 @@ body {
     background: var(--gameover-btn-hover);
 }
 
-lottie-player {
+dotlottie-player {
     display: block;
     margin: 20px auto;
 }
